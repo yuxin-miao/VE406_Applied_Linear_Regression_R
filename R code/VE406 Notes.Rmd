@@ -1,0 +1,133 @@
+---
+title: "Applied Regression Analysis using R"
+output:
+  html_notebook: default
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+# L01-Basic 
+use '_' in name, to avoid confusion with the member function
+```{r}
+# help
+rm(list = ls()) # clean environment 
+?is.logical()
+library(help = "stats") # for function list in a package
+is.integer(7L) # integer, with 'L' after number
+is.integer(7)
+x <- 1 # assignment 
+1 -> x1
+x = 1
+
+# vector c()
+month <- c('Jan','Feb','Dec')
+class(month)
+num <- 1:50 # return a vector 
+num_seq <- seq(1, 50, by = 2) # create sequence: seq(from, to, by)
+seq(stats::rnorm(20))
+num_seq[which(num_seq>9)]
+
+# categorical data
+month.fac <- factor(month, order=TRUE, levels = c("Jan", "Feb", "Dec"))
+month.fac.in <- factor(month) # default: mathematical order
+
+# matrix, special vectors in R 
+A = matrix(month, nrow = 6, byrow = TRUE, ncol = 9)
+B = matrix(month, nrow = 6, byrow = FALSE, ncol = 9)
+
+# list, combine different data type 
+listAB = list(num = num_seq, Amatrix = A, Bmatrix = B)
+class(listAB)
+
+# data.frame
+df.A <- data.frame(A)
+df.A$X1
+class(df.A)
+class(df.A$X3)
+df.A$X1 <- factor(df.A$X1)
+
+# function
+myfuc = function(x) { # key word function
+    s = 0
+    for (eps in x) {
+      if (eps <= 0){
+        next
+      }
+      s = s + eps
+      if (s > 20) {
+        break
+      } 
+    }
+    s
+}
+
+# recycling rule
+c(1, 2, 3, 4) + c(1, 2) # equal to c(1, 2, 3, 4) + c(1, 2, 1, 2)
+
+```
+e
+## implicit coercion to mixed types
+logical -> integer -> numeric -> complex -> character
+
+as transform from logical to integer is easier
+
+```c(11, month)```  will convert integer to a character 
+
+# L02-slr
+*simple linear regression basic* 
+
+- regression analysis: statistical model that involve one dependent variable and one or more independent variables 
+
+- regression: find a rule of picking distribution for *Y* from a space of infinitely many distribution that agrees with the data
+
+ **Primary Assumption:** (for now) a sequence of random variables is independent and identically distributed (i.i.d.)
+
+
+## Binomial Example
+
+*L02-16/55 pages, US presidents*
+
+- if we become US presidents, we are more likely to have sons -- T/F depend on the p-value 
+- US presidents are more likely to have sons -- independent of the p-value, because the current data has exhausted all the info of presidents
+
+```{r}
+rm(list = ls())
+p <- 1/2 # hypothesis: H0: p=1/2
+n <- 158
+x <- 0:n # all possible number of daughters 
+fX <- dbinom(x, size = n, prob = p) # density function
+p_lowerTail <- pbinom(67, size = n, prob = p)
+p_Value <- 2 * p_lowerTail
+tmp_pLower <- fX[x <= 67]
+x_upperTail = 1 + pbinom(p_lowerTail, size = n, prob = p, lower.tail = FALSE)
+
+```
+
+```{r}
+myp_func = function(p){
+  n = 190
+  p125 = pbinom(125, size = n, prob = p)
+  
+}
+```
+
+```{r}
+# example from help
+require(graphics)
+# Compute P(45 < X < 55) for X Binomial(100,0.5)
+P_45_55 = sum(dbinom(46:54, 100, 0.5))
+
+## Using "log = TRUE" for an extended range :
+n <- 2000
+k <- seq(0, n, by = 20)
+plot (k, dbinom(k, n, pi/10, log = TRUE), type = "l", ylab = "log density",
+      main = "dbinom(*, log=TRUE) is better than  log(dbinom(*))")
+lines(k, log(dbinom(k, n, pi/10)), col = "red", lwd = 2)
+## extreme points are omitted since dbinom gives 0.
+mtext("dbinom(k, log=TRUE)", adj = 0)
+mtext("extended range", adj = 0, line = -1, font = 4)
+mtext("log(dbinom(k))", col = "red", adj = 1)
+```
+
+
+

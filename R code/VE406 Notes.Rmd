@@ -81,9 +81,23 @@ as transform from logical to integer is easier
 - regression: find a rule of picking distribution for *Y* from a space of infinitely many distribution that agrees with the data
 
  **Primary Assumption:** (for now) a sequence of random variables is independent and identically distributed (i.i.d.)
+ 
+## Estimation: 
+
+The process of using data to suggest a value for a parameter 
+
+**Estimate:** the value suggested is called the estimate of the parameter (depend on data)
+
+**Estimator:** a function of the data, that gives estimates of the parameter
+$\hat{\theta} = h(X)$
+, the distribution for $\hat{\theta}$ is called **sampling distribution** of the estimator.
+```{r}
+?pbinom
+```
 
 
-## Binomial Example
+
+### Binomial Example
 
 *L02-16/55 pages, US presidents*
 
@@ -118,7 +132,13 @@ phat = 125 / 190
 abline(v = phat, col = "red")
 legend("topleft", legend = "maximum likehood estimate", lty = 1, col = 2)
 ```
+- When says 
 
+We are 95\% confident that the true probability of having a daughter is between (0.586, 0.725) for a male deep-sea diver 
+
+it is actually means 
+
+The method used to obtain the interval (0.586, 0.725) will contain the true probability 95\% of time if it is to be repeated 
 ```{r}
 binom.test(125, n = 190, p = 0.5) 
 ```
@@ -134,26 +154,107 @@ runif(1)
 ```
 
 ## Law of large numbers 
+Suppose that $X_1,X_2,.. X_n$ all have the same expected value $\mathbb{E}[X_i]=\mu$, the same variance $Var[X_i] = \sigma^2$ and zero covariance with each other $Cov[X_i, X_j] = 0$, when $i\neq j$
 
+or could say if $X_i$ are i.i.d., then the following holds 
+$$\bar{X_n} = \frac{1}{n}\sum_{i=1}^nX_i \rightarrow \mu  ,when \quad n\rightarrow \infty $$
+
+reduce the spread of the distribution to 0 effectively 
+$$\lim_{n\rightarrow \infty} Pr(|\bar{X_n} - \mu| > \varepsilon) = 0, \rm{for \ any} \ \varepsilon > 0 $$
 
 ## Central Limit Theorm 
 
-An estimator is consistent if 
+
 
 
 # L03 - LSE & MLE
 
+$MSE(m) = \mathbb{E}[(Y-m)^2] = Var[Y] + (\mathbb{E}[Y-m])^2$ -> bias variance decomposition
+
 The common model assumptions for slr 
 
-bias of an estimator $\hat{\theta}$
+bias of an estimator $\hat{\theta}$, $\theta $ is a fixed population parameter 
+$Bias(\hat{\theta},\theta) = \mathbb{E}[\hat{\theta} - \theta]$
+
+- residual 
+
+the estimate $\hat{e_i}$ is known as **residual** .
+
+observed $y_i$ and $x_i$,
+$\hat{e_i} =y_i - ( b_0 + b_1x_i)$, where $b_0$ and $b_1$ are estimates of $\beta_0$ and $\beta_1$; $\hat{y_i} = b_0 + b_1x_i$ is known as the predicted/fitted value. 
+
+Then  $y_i = \hat{y_i}+\hat{e_i}$
+
+- consistent 
+
+An estimator is **consistent** if
+$$\hat{\theta_n} \rightarrow \theta \quad \rm{when} \quad n\rightarrow \infty$$
+### Least Square Estimation 
+
+$SS_E$: error sum of squares 
+
+$SS_E:=e_1^2 + e_2^2 + ...+e_n^2 = \sum_{i=1}^n(y_i-(b_0+b_1x_i))^2$
+
+## model assumption for slr
+![](/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/image/modelAss.png)
+
+## assumptions about the error term 
 
 
-consistent 
 
-# L04 - diagnostics 
+# Overview of statistics 
+In true universe, we have random variable $Y$;
+
+In real world, we observe value $y$;
+
+Then to link them together, we use **estimator**. However, error exist in this process, two types 
+
+- sampling error (improve when data collection)
+- estimation error (improve using statistics）
+
+Two main things 
+- parameter estimation 
+- hypothesis testing 
+
+To test the model sufficiency 
+
+- F-Test for significance of regression: whether all predictors are zero 
+- T-test: whether a single predictor is necessary for a given model
+- Partial F-test: can be applied to an arbitrary subset of predictors 
+
+
+
+
+# L04 - diagnostics
+
+
+
+## residual plot 
+
+$\hat{e_i}\quad vs. \quad \hat{y_i}$ fitted value of y
+
+the variance of $\varepsilon$ in true world is expected to be a constant, the variance of the residuals could be shown it is also a constant. 
+
+
+To check the assumptions of the residual
+
+- 1. In residual plot, it should be random scatter, no underlying non-linear relationship
+- 2. In residual plot, randomly scatter around mean zero, with basically unchanged variance 
+- 3. check they are independent of each other by ACF 
+- 4. check normality by QQplot (Quantile-Quartile normal plot)
+
+## autocorrelation function
+If errors are independent, the estimates should be small and patternless 
+
 time series variable - very likely to be underlying correlation among residuals 
+
 do the residual plot after fit the tesla price model
+
 observe some high price - after days are likely to be large
+
+based on ACF plot: determine the underlying lag correlation 
+
 bad impact - negative on the following days 
+
 tesla price today ~ tommorrow? ~ next week? :**autocorrelation function**
 

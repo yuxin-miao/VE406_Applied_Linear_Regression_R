@@ -54,3 +54,4 @@ vignettes/*.pdf
 *.jpg
 lab
 labref
+*checkpoint.ipynb

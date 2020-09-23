@@ -94,7 +94,20 @@ $\hat{\theta} = h(X)$
 ```{r}
 ?pbinom
 ```
+Given X~Normal(n, p)
 
+Pr(X = x) = dbinom(x, size = n, prob = p)
+
+Pr(X <= x) = pbinom(x, size = n, prob = p)
+
+qbinom: The quantile is defined as the smallest value x such that F(x) ≥ p, where F is the distribution function. with p$\in$ [0,1], returns the smallest value of q s.t. Pr(X<=returnvalue) >= p
+
+```{r}
+dbinom(x, size, prob, log = FALSE)
+pbinom(q, size, prob, lower.tail = TRUE, log.p = FALSE)
+qbinom(p, size, prob, lower.tail = TRUE, log.p = FALSE)
+rbinom(n, size, prob)
+```
 
 
 ### Binomial Example
@@ -105,33 +118,84 @@ $\hat{\theta} = h(X)$
 - US presidents are more likely to have sons -- independent of the p-value, because the current data has exhausted all the info of presidents
 
 ```{r}
-rm(list = ls())
-p <- 1/2 # hypothesis: H0: p=1/2
-n <- 158
-x <- 0:n # all possible number of daughters 
-fX <- dbinom(x, size = n, prob = p) # density function
-p_lowerTail <- pbinom(67, size = n, prob = p)
-p_Value <- 2 * p_lowerTail
-tmp_pLower <- fX[x <= 67]
-x_upperTail = 1 + pbinom(p_lowerTail, size = n, prob = p, lower.tail = FALSE)
+rm(list = ls())  # clean working environment
 
+## set up hypothesis
+theta <- 1/2  ## assume equal chance 50-50
+n <- 158  ## total number of trials
+x <- 0:n  ## all possible number
+x1 <- seq(0, n, by = 1)  # alternative way of set up sequence
+fX <- dbinom(x, size = n, prob = theta)  ## pdf of x
+# ? dbinom  ## getting help with ?
+obs <- 67
+p.lowerTail <- pbinom(obs, size = n, prob = theta)
+## under the assumption of theta = 0.5
+p.value <- 2 * p.lowerTail
+
+## visualization
+tmpL <- fX[x <= 67]  ## as extreme as what we observed
+x.upperTail <- 1 + qbinom(p.lowerTail, 
+                          size = n, prob = theta, lower.tail = FALSE) ## quantile function, different from pbinom 
+tmpU <- fX[x >= x.upperTail]
+
+M <- x[x > 67 & x < x.upperTail]
+tmpM <- fX[x > 67 & x < x.upperTail]
+
+plot(x, fX, type = "n", 
+     xlab = "observed number of daughter", ylab = "probability mass")
+lines(0:obs, tmpL,type = "h", col = "red")
+lines(x.upperTail:n, tmpU,type = "h", col = "red")
+lines(M, tmpM, tmpM,type = "h")
+points(0:obs, tmpL, col = "red")
+points(x.upperTail:n, tmpU, col = "red")
+points(M, tmpM)
+legend("topright", legend = "P-value", col = "red", lty = 1, pch = 1)
 ```
 
 ```{r}
-myp_func = function(p){
-  n = 190
-  p125 = pbinom(125, size = n, prob = p)
-  p124 = pbinom(124, size = n, prob = p)
-  p125 - p124 # dbinom(125, size = n, prob = p)
-  # the likelihood of observing at least 125 daughters 
+## function to calculate the density of a binomial distribution
+## modified with two more attributes: obs and n
+myp_func <- function(n, obs, p){
+  ## n: total number of binomial trials
+  ## obs: observed number of events
+  ## p: probability of success
+  pbinom(obs, size = n, prob = p) - pbinom(obs - 1, size = n, prob = p)
+  ## exactly the same as dbinom(obs, size = n, prob = p)
 }
-pvec = seq(0, 1, length.out = 100)
-lvec = myp_func(pvec)
-plot(pvec, lvec, type = "l", xlab = "p", xlim = c(-0.2, 1))
-phat = 125 / 190
+
+myp_func(190, 125, 0.5)
+dbinom(125, size = 190, prob = 0.5)
+
+myp_func(190, 125, 0.6)/myp_func(190, 125, 0.5)
+dbinom(125, size = 190, prob = 0.6)/dbinom(125, size = 190, prob = 0.5)
+
+## to find the maximum likelihood estimate based on the obs
+## we need to find the p that maximise the underlying pdf/pmf
+## myp_func is here to show how to write a simple function
+## we will use the proper dbinom function here after
+
+
+## to visually examine the mle of deep sea diver case study
+## observations: 125 daughter of 190 children
+pvec <- seq (0, 1, length.out = 10000000)  ## set the seq of all possible prob
+lvec <- dbinom(125, size = 190, prob = pvec)  ## find the likelihood
+plot (pvec, lvec, type = "l",  ## visualisation of the likelihood
+      xlab = "True probability of having a daughter for a male deep sea diver",
+      ylab = "Likelihood of observing 125 daughters of 190 children",
+      main = "Likelihood fuction",
+      xlim = c(-0.2, 1))
+
+# common sense: best guess: the estimator of p is 125/190
+# get from the maximum likelihood function
+phat <- pvec[which.max(lvec)]
 abline(v = phat, col = "red")
-legend("topleft", legend = "maximum likehood estimate", lty = 1, col = 2)
+legend("topleft", legend = "Maximum Likelihood Estimate",
+       lty = 1, col = 2)
+# get that phat = 0.658...
+
 ```
+### Confidence Interval
+Confidence interval of binomal distribution 
 - When says 
 
 We are 95\% confident that the true probability of having a daughter is between (0.586, 0.725) for a male deep-sea diver 
@@ -162,9 +226,127 @@ $$\bar{X_n} = \frac{1}{n}\sum_{i=1}^nX_i \rightarrow \mu  ,when \quad n\rightarr
 reduce the spread of the distribution to 0 effectively 
 $$\lim_{n\rightarrow \infty} Pr(|\bar{X_n} - \mu| > \varepsilon) = 0, \rm{for \ any} \ \varepsilon > 0 $$
 
+### Illustration of LLN
+As n increases, the mean of X approaches the true mean and the error approaches 0.
+```{r}
+rm(list = ls())
+n <- 1e4
+lambda <- 3
+
+xpois <- rpois(n, lambda)  ## consider poisson random variable
+xexp <- lambda  ## true underlying mean
+
+nseq <- 1:n
+# investigate Xbar when n increases, `cumsum` is  cumulative sum 
+xcbar <- cumsum(xpois)/nseq  ## sample mean as n increases, at various stage 
+error <- abs(xcbar - xexp)  ## relative error
+plot(nseq, xcbar, type = "l", xlab = "Sample Size",
+     ylab = "Sample Mean")
+abline(h = xexp, col = 2)
+legend("topright", legend = "True mean", lty = 1, col = 2)
+
+
+plot(nseq, error, type = "l", xlab = "Sample Size", ylab = "Relative Error")
+abline(h = 0, col = 2)
+```
+A better look:
+```{r}
+## a better look at LLN
+sample.size.vec <- c(5, 10, 50, 100, 500)  ## 5 cases
+ncases <- length(sample.size.vec)
+num <- 1e3  ## number of repetitions
+xbar.vec <- double()  ## x bar for all simulations
+error.vec <- double()  ## error for all simulations
+n.vec <- integer()  ## sample size for each case
+
+for(j in 1:ncases){
+  n <- sample.size.vec[j]  ## current sample size
+  s.vec <- double(num)  ## all x bar for this n
+  e.vec <- double(num)  ## all error for this n
+
+  for (i in 1:num){  ## repeat num number of times
+    x <- rpois(n, lambda)  ## sample of x by sample size 5, 10 etc.
+    s.vec[i] <- sum(x)/n
+    e.vec[i] <- abs(s.vec[i] - xexp)/abs(xexp)
+  }
+  
+  xbar.vec <- c(xbar.vec, s.vec)
+  error.vec <- c(error.vec, e.vec)
+  n.vec <- c(n.vec, rep(sample.size.vec[j], num))
+  }
+
+x.df <- data.frame(xbar = xbar.vec, error = error.vec, n = n.vec)
+boxplot(xbar~n, data = x.df, xlab = "Sample Size", ylab = "Sample Mean")
+abline(h = xexp, col = 2)
+legend("topright", legend = "True mean",
+       lty = 1, col = 2)
+
+boxplot(error~n, data = x.df,
+        xlab = "Sample Size", ylab = "Relative Error")
+abline(h = 0, col = 2)
+## as we increase the sample size
+## the error gets closer to 0 and more constant
+
+```
+
+
+
 ## Central Limit Theorm 
 
+![](/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/image/CLT.png)
+### Illustration 
+```{r}
+sample.size.vec
+lambda; xexp
 
+xvar <- lambda  ## true variance for Poisson
+sqrt.n.vec <- sqrt(n.vec)  ## last for loop
+
+sample_error <- xbar.vec - xexp
+sample_variance <- sqrt(xvar)
+r.vec <- sqrt.n.vec*sample_error/sample_variance  ## normalised error
+
+x.hist <- seq(-4, 4, length.out = 100)
+par(mfrow = c(2, 3))
+
+for(eps in sample.size.vec){
+  ss <- r.vec[n.vec == eps]  ## subset by n
+  tname <- bquote(bold(atop("Sample Size = "~.(eps), "1000 Repetition")))
+  
+  hist(ss, feq = FALSE, xlab = "r", main = tname,
+       ylim = c(0, 0.6), xlim = c(-4, 4))
+
+  lines(density(ss), col = 4, lty = 2)  ## kernel denity estimation
+  lines(x.hist, dnorm(x.hist), col = 2, lty = 1)  ## true density function
+  legend("top", col = c(1, 2), lty = c(2, 1),
+         legend = c("Estimation", "True"))
+}
+
+true.norm <- rnorm(num, mean = 0, sd = 1)
+hist(true.norm, freq = FALSE, ylim = c(0, 0.6),
+     xlim = c(-4, 4), xlab = "Z", main = "100 Z~N(0, 1)")
+lines(x.hist, dnorm(x.hist), col = 2, lty = 1)
+par(mfrow = c(1, 1))
+
+sample_quantile_5 = sort(r.vec[n.vec == 5])
+sample_quantile_10 = sort(r.vec[n.vec == 10])
+sample_quantile_50 = sort(r.vec[n.vec == 50])
+sample_quantile_100 = sort(r.vec[n.vec == 100])
+sample_quantile_500 = sort(r.vec[n.vec == 500])
+sample_cdf = (1:num)/num
+plot(sample_quantile_5, sample_cdf, type = "s",
+     xlab = "", ylab = "",
+     main = "Cumulative distribution function n = 500")
+lines(sample_quantile_10, sample_cdf, col = 3, lty = 4)
+lines(sample_quantile_50, sample_cdf, col = 4, lty = 4)
+lines(sample_quantile_100, sample_cdf, col = 5, lty = 4)
+lines(sample_quantile_500, sample_cdf, col = 6, lty = 4)
+lines(x.hist, pnorm(x.hist), col = 2, lty = 2)
+legend("topleft", lty = c(1, 2), col = c(1, 2), 
+       legend = c("Estimation", "True CDF"))
+
+
+```
 
 
 # L03 - LSE & MLE
@@ -256,5 +438,17 @@ based on ACF plot: determine the underlying lag correlation
 
 bad impact - negative on the following days 
 
-tesla price today ~ tommorrow? ~ next week? :**autocorrelation function**
+tesla price today ~ tomorrow? ~ next week? :**autocorrelation function**
+
+hypothesis -> colloect data -> describe the data use (sample mean/.../plot) -> fit the model -> use diagnostics to check the assumption (through residual ~ plot residual vs. fitted value / residuali vs. residualj 或者 autocorralation check coevariance / residuals vs. X) --- if the assumption is violated -> do the transformation ( constant variance  ~ log trandformation of y / normality -> box-cox to find additional variable, 可以同时对于y与x transform) 
+
+# L05 - transformation
+
+## Box-Cox transformation 
+
+When y and x both do not follow normal dist., use transformation 
+find the $\lambda$ that maximize the likelihood function
+
+
+
 

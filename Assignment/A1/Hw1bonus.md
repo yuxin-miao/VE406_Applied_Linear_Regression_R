@@ -101,3 +101,12 @@ fig.legend(loc=1, bbox_to_anchor=(1,1), bbox_transform=ax1.transAxes)
 plt.show()
 ```
 
+
+
+
+
+
+
+Also, residuals vs. fitted values are plotted for further analysis. We could see that it has been more close to the mean 0, which meets our assumption.
+
+<img src="/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/Assignment/A1/a1biasVar/residuals.png" alt="residuals" style="zoom:150%;" />

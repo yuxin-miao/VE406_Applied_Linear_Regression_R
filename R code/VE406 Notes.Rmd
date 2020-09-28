@@ -425,6 +425,9 @@ To check the assumptions of the residual
 - 3. check they are independent of each other by ACF 
 - 4. check normality by QQplot (Quantile-Quartile normal plot)
 
+
+
+
 ## autocorrelation function
 If errors are independent, the estimates should be small and patternless 
 
@@ -442,13 +445,77 @@ tesla price today ~ tomorrow? ~ next week? :**autocorrelation function**
 
 hypothesis -> colloect data -> describe the data use (sample mean/.../plot) -> fit the model -> use diagnostics to check the assumption (through residual ~ plot residual vs. fitted value / residuali vs. residualj 或者 autocorralation check coevariance / residuals vs. X) --- if the assumption is violated -> do the transformation ( constant variance  ~ log trandformation of y / normality -> box-cox to find additional variable, 可以同时对于y与x transform) 
 
+
+
+#### Check normality 
+plotting the estimated Vs assumed distribution
+
+The error should follow normal distribution N(0, $\sigma^2$)
+
+```{r}
+oc.df = read.table("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/old_car.txt", header = TRUE)
+str(oc.df)
+age = 91 - oc.df$year
+oc.LM = lm(price~age, data = oc.df)
+model = oc.LM
+
+## Residual vs. fitted values 
+plot(fitted.values(model), residuals(model), xlab = "Fitted values", ylab = "Residuals", main = "Residual Plot", sub = "lm(price~age)")
+```
+
+
 # L05 - transformation
 
+$Y_i|X_i$ ~ Normal $(\beta_0+
+\beta_1x_i, \sigma^2)$
+
 ## Box-Cox transformation 
+![](/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/image/boxcox.png)
+
 
 When y and x both do not follow normal dist., use transformation 
 find the $\lambda$ that maximize the likelihood function
 
+如果log transformation是可以的，则会得到lambda的范围基本在0
+
+而都不可以的情况，可以用提供的box-cox，可以同时转化x和y
+```{r}
+library(MASS)
+?boxcox
+```
 
 
+```{r}
+oc.df = read.table("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/old_car.txt")
+oc.LM = lm(price~age, data = oc.df)
+```
+# L06 Prediction 
+to predict based on the current data 
+
+
+## TSS
+variability in the response variable 
+
+$TSS = \sum^n_{i=1}(y_i-\bar{y})^2=\sum^n_{i=1}(\hat{y_i}-\bar{y})^2 + \sum^n_{i=1} \hat{e_i}^2$
+total sum of squares = explained sum of squares + residual sum of squares 
+
+TSS = ESS + RSS 
+
+# L07 Multiple linear regression 
+```{r}
+install.packages("xlsx")
+library(xlsx)
+oc.df = read.xlsx("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/transistor.xlsx")
+
+```
+
+# L08 - poly
+Example1: only drop variables after check residual plots (all the assumptions are satisfied)
+
+```{r}
+sim_df = read.csv("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/sim_poly_class.csv.bz2")
+str(sim_df)
+
+
+```
 

@@ -501,13 +501,69 @@ total sum of squares = explained sum of squares + residual sum of squares
 
 TSS = ESS + RSS 
 
-# L07 Multiple linear regression 
-```{r}
-install.packages("xlsx")
-library(xlsx)
-oc.df = read.xlsx("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/transistor.xlsx")
+# L07 Multiple linear regression
 
+Case study: remember the samll dataset, we do not have strong evidence 
+1. drive-in time or dose influences gain linearly O -> F-test
+2. drive-in time influences gain for a given dose linearly -> t-test
+3. dose influences gain for a given drive-in time linearly -> t-test
+4. there is any reason to use both drive-in time and dose to explain gain -> compre with the submodel using adjusted R-squared 
+
+```{r}
+# install.packages("xlsx")
+library(xlsx)
+trans.df = read.xlsx("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/transistor.xlsx", sheetIndex = 1)
+## full model first, take all the regression variables first.
+trans.LM = lm(gain~., data = trans.df) # use gain as response, '.' means all other variables are x
+
+plot(trans.LM, which = 1) ## ?
+model = trans.LM
+fvs = fitted.values(model)
+res = residuals(model)
+sres = rstandard(model) # standardised 
+## before make inference, need to check the assumptions first
+# -- residual plot --#
+plot(fvs, sres, xlab = "Fitted Values", ylab = "Standardized Residuals", main = "Residual Plot", sub = "lm(formula=gain~.,data = trans.df)") + abline(h = 0, lty = 2, col = "red") # use standardized residuals 
+# no indication of nonlinearity, correlation, non-constant variance 
+
+plot(res[-nrow(trans.df)], res[-1], xlab = "Previous", ylab = "Residuals", main = "Residuals vs. Previous Residual", sub = "lm(formula=gain~.,data = trans.df)")
+acf(res)
+# From both plots, no indication that the residuals are correlated 
+
+qqnorm(res)
+qqline(res, col = 2, lty = 2) # right in the R script 
+
+# shapiro-wilk
+shapiro.test(res) # small p-value: reject 
+
+## no obvious violation of the assumptions, so we could proceed
+summary(model)
 ```
+For question 4, using adjusted R squared which takes the model complexity into account. However, it is only meaningful when **all the model assumptions are met**. 
+```{r}
+#full model
+trans.LM = lm(gain~., data = trans.df)
+# submodel 
+trans.dose.LM = lm(gain~dose, data = trans.df)
+trans.dit.LM = lm(gain~dit, data = trans.df)
+# should verify through residual plots then see the summary and compare the adjusted R square
+res.dose = residuals(trans.dose.LM)
+plot(res.dose)
+acf(res.dose)
+qqnorm(res.dose) # violate the assumption
+shapiro.test(res.dose)
+
+# why
+res.dit = residuals(trans.dit.LM)
+plot(res.dit)
+acf(res.dit)
+qqnorm(res.dit) 
+shapiro.test(res.dit)
+
+# all violate the assumption, because of the samll dataset, need to be more strict
+# summary(trans.dit.LM) summary is meaningless 
+```
+
 
 # L08 - poly
 Example1: only drop variables after check residual plots (all the assumptions are satisfied)
@@ -519,3 +575,35 @@ str(sim_df)
 
 ```
 
+
+str(LifeCycleSavings)
+```{r}
+density(~sr, data = LifeCycleSavings)
+
+## Forward, begin with an empty model 
+
+
+
+## use anova to do the F-test
+
+
+## because of the negative correlation between pop15 and pop75, and the small variance of pop75 itself, add one pop75 do not add much information 
+
+## dpi's variance close to infinity (random actually), so still not add much information
+
+
+## 2和5比较   without pValue -> 2,5 is submodel of full model, 所以2和4可以比较 5和4可以比较 but we could not compare 2 and 5 using F-test (no nested relationship between them)
+
+## model 4 residual plots 
+## residual vs. dpi -> very few in 3000-4000 (outliers / points with high leverage / influential points (will influence the regression much   ))
+
+
+## cook's distance : look at the specific points and determine based on the target whether need to exclude 
+
+
+## box-cox plot -> reduce the high leverage points (reduce variance in x)
+
+## fit5 
+```
+need normally distributed y but do not need normally distributed x, because error term relates to y 
+two mode / clear gap in the residual plot -> two distributions 

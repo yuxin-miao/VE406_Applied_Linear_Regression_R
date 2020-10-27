@@ -17,9 +17,9 @@
 5. The $100(1-\alpha)\%$ confidence interval for $\mathbb{E}[W|Z=1]$ is 
 $$
    \hat{\mu}_{W|Z} \pm t_{\alpha/2,n-2}S\sqrt{\frac{1}{n}+\frac{(z-\bar{z})^2}{\sum_{i=1}^n(z_i-\bar{z})^2}}
-   $$
+$$
    From the output, obtain the estimate as 
-   
+
    $$W = 0.39198 + 0.45234Z$$, then $\hat{\mu}_{W|Z} = 0.39198+0.45234=0.84432$,
 
    From the R output
@@ -30,15 +30,15 @@ $$
    Var[\hat{\beta_0}] &=\frac{\sigma^2 \sum_{i=1}^n z_i^2}{n \sum_{i=1}^n(z_i-\bar{z})^2} =\frac{1.039^2 \cdot \sum_{i=1}^n z_i^2}{200 \cdot378.71}=0.12941^2 &\rm{so}&\sum_{i=1}^n z_i^2=1175.02 \\[10pt]
    \rm{Therefore}&\sum_{i=1}^n(z_i-\bar{z})^2=\sum(z_i^2+\bar{z}^2-2z_i\bar{z})=\sum z_i^2+200\bar{z}^2-400\bar{z}^2 &\rm{so} & \bar{z}=1.995
    \end{aligned}
-   $$
+$$
    calculate that 
-   $$
+$$
    \begin{aligned}
    \hat{\mu}_{W|Z} \pm t_{\alpha/2,n-2}S\sqrt{\frac{1}{n}+\frac{(z-\bar{z})^2}{\sum_{i=1}^n(z_i-\bar{z})^2}}&=0.84432\pm 1.96*1.039*\sqrt{\frac{1}{200}+\frac{(1-1.995)^2}{378.71}}\\
    &= 0.84432\pm 0.17770
    \end{aligned}
-   $$
-   
+$$
+
    The interval is $[0.67, 1.02]$
 
 6. The $100(1-\alpha)\%$ prediction interval for $\widehat{W|Z}$ is
@@ -102,4 +102,19 @@ $$
 
 Because it is only the confidence interval for the regression function at each $x$, shows the variation in inference on the regression parameter at every $x$ value (such that, caused by the variation of parameter). So it do not indicate that any random variable $Y$ would be in the confidence interval. 
 
+
+
+# VE406 Hw3
+
+### Q1
+
+$\hat{y_1}=\hat{\theta}$
+
+### Q5
+
+1. 
+
+   Based on the model $\mathbb{E}[Y|X] = \beta_0+\beta_1x$, choose $\hat{\beta}=\mathbf{b}$
+
+   $\hat{e}=\mathbf{y}-\hat{y}=\mathbf{\beta}f(b_0,b_1)=$
 

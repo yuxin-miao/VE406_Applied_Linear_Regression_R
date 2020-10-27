@@ -31,7 +31,8 @@ pastecs::stat.desc(LifeCycleSavings)  ## distribution stats
 ## as functions with the same name from different libs will be masked by
 ## the order of lib loading.
 ## in this example, we called "stat.desc" from "pastecs"
-
+# var: 20.0740459: total variation of y. Then variation in other variables.
+# So to explain 20 variation in y, x at least need to have as much as variation as y, so pop15 and dpi might explain much variation
 
 ################################################################################
 ## explorative analysis
@@ -65,7 +66,7 @@ densityplot(~ ddpi, data = LifeCycleSavings,
             plot.points = FALSE)
 
 # scatterplot matrix
-splom(LifeCycleSavings[c(1:5)], main = "LifeCycleSavings Data")
+lattice::splom(LifeCycleSavings[c(1:5)], main = "LifeCycleSavings Data")
 
 
 ## shapiro-wilk test
@@ -81,7 +82,7 @@ shapiro.test(LifeCycleSavings$ddpi)
 ################################################################################
 ## fit multiple linear regression model
 ## from empty to full
-lm_SR_fit0 <- lm(sr ~ 1, data = LifeCycleSavings)
+lm_SR_fit0 <- lm(sr ~ 1, data = LifeCycleSavings) # just intercept 
 anova(lm_SR_fit0)  ## F-test statistics on RSS and ESS
 summary(lm_SR_fit0)  ## summary output of the fit
 sd(LifeCycleSavings$sr)
@@ -136,6 +137,7 @@ plot(LifeCycleSavings$dpi, residuals(lm_SR_fit4),
      xlab = "dpi", ylab = "Residuals",
      main = "Residual plot", sub = "lm(sr ~ .)")
 abline(a = 0, b = 0, lty = 2, col = "red")
+# some point is very far away 
 
 plot(LifeCycleSavings$ddpi, residuals(lm_SR_fit4),
      xlab = "ddpi", ylab = "Residuals",
@@ -210,7 +212,7 @@ boxcox(lm(LifeCycleSavings$ddpi ~ 1))  ## lambda = 0.25
 LifeCycleSavings["pop75_bc"] <- (LifeCycleSavings["pop75"]^0.2 - 1)/0.2
 LifeCycleSavings["dpi_bc"] <- log(LifeCycleSavings["dpi"])
 LifeCycleSavings["ddpi_bc"] <- (LifeCycleSavings["ddpi"]^0.25 - 1)/0.25
-
+# after transformation 
 lm_SR_fit4_bc <- lm(sr ~ pop15 + pop75_bc + 
                       dpi_bc + ddpi_bc, data = LifeCycleSavings)
 summary(lm_SR_fit4_bc)
@@ -230,12 +232,12 @@ plot(lm_SR_fit3_bc, which = 2)
 plot(lm_SR_fit3_bc, which = 3)
 plot(lm_SR_fit3_bc, which = 4)
 plot(lm_SR_fit3_bc, which = 5)
-plot(lm_SR_fit3_bc, which = 6)
+plot(lm_SR_fit3_bc, which = 6)  # lybia still leverage point, but its influence is decreased. 
 shapiro.test(residuals(lm_SR_fit3_bc))
 
-cor(LifeCycleSavings)
+cor(LifeCycleSavings) # (Correlation, Variance and Covariance (Matrices))
 ## very high correlation between pop15 and pop75
-car::vif(lm_SR_fit4_bc)
+car::vif(lm_SR_fit4_bc) # multi corralation 
 car::vif(lm_SR_fit3_bc)
 #create vector of VIF values
 vif_values <- car::vif(lm_SR_fit3_bc)
@@ -248,7 +250,7 @@ abline(v = 5, lwd = 3, lty = 2)
 ## do not provide unique or independent information in the regression model.
 ## If the degree of correlation is high enough between variables, it 
 ## can cause problems when fitting and interpreting the regression model.
-## The most common way to detect multicollinearity is by using the 
+## The most common way to  is by using the 
 ## variance inflation factor (VIF), which measures the correlation and 
 ## strength of correlation between the predictor variables in a 
 ## regression model.

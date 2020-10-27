@@ -503,6 +503,28 @@ TSS = ESS + RSS
 
 # L07 Multiple linear regression
 
+
+![](/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/image/multi.png)
+
+ regression coefficients in multiple regression: partial regression coefficients, as their interpretation requires other variables should be held fixed. 
+
+**How least square works**
+
+$$
+\begin{align*}
+\textbf{y}  &= \mathbf{X}\hat{\beta} + \hat{e}\\
+\rm{minimize\ residual\ sum\ of\ squrares} &\quad\hat{e}^T\hat{e}\\
+\rm{obtain\ the\ estimator}&\quad \hat{\beta}=(\mathbf{X}^T\mathbf{X})^{-1}\mathbf{X}^T\mathbf{y}\\
+\rm{fitted\ value}&\quad \hat{\textbf{y}}  = \mathbf{X}\hat{\beta}= \mathbf{X}(\mathbf{X}^T\mathbf{X})^{-1}\mathbf{X}^T\mathbf{y}=\mathbf{P}\mathbf{y} \\
+\rm{residual}& \quad \hat{e}=\mathbf{y} -\hat{\mathbf{y}}=(\mathbf{I}-\mathbf{P})\mathbf{y}
+\end{align*}
+$$
+Projection Matrix$\mathbf{P}, \mathbf{P}^T=\mathbf{P}, \mathbf{P}^2=\mathbf{P}$ 
+
+Identity Matrix$I$
+
+unbiased $\mathbf{\hat{\beta}}, \mathbf{\hat{\beta}}\sim\rm{Normal}(\beta,\sigma^2(\mathbf{X^T \mathbf{X}})^{-1})$
+
 Case study: remember the samll dataset, we do not have strong evidence 
 1. drive-in time or dose influences gain linearly O -> F-test
 2. drive-in time influences gain for a given dose linearly -> t-test
@@ -569,10 +591,21 @@ shapiro.test(res.dit)
 Example1: only drop variables after check residual plots (all the assumptions are satisfied)
 
 ```{r}
-sim_df = read.csv("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/sim_poly_class.csv.bz2")
-str(sim_df)
+sim.df = read.csv("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/sim_poly_class.csv.bz2")
+str(sim.df)
+sim.LM = lm(y~x1+x2+x3, data = sim.df)
+# plot the residuals, find non-random, indeicate nonlinearity
+# The nonlinearity would be clearer if add estimated conditional mean to the residual plot 
+c.mean.plot = function(tmp.x, tmp.y, n.each, pos = "topleft"){ n.x = rounod(length(unique(tmp.x)) / n.each)
+x.group = cut(tmp.x, breaks = n.x, labels = FALSE)
+x.vec = tapply(tmp.x, x.group, mean) y.vec = tapply(tmp.y, x.group, mean)
+points(x.vec, y.vec, col = "blue", pch = 16) lines(x.vec, y.vec, col = "blue", lty = 2)
+legend(pos, "Estimated Conditional Mean", col = "blue", lty = 2, pch = 16)
+}
 
-
+# then do the plot: standardised residual against one of the regressors
+# based on the plot, have a new model sim.quad.LM = lm(y~x1+x2+x3+I(x2^2),data = sim.df), then check the assumptions 
+# when all assumptions meet, look at the summary for each test 
 ```
 
 
@@ -607,3 +640,120 @@ density(~sr, data = LifeCycleSavings)
 ```
 need normally distributed y but do not need normally distributed x, because error term relates to y 
 two mode / clear gap in the residual plot -> two distributions 
+
+当ACF的蓝色线很宽的时候，说明没有太多的data
+
+# L10 
+
+- stability problem 
+```{r}
+set.seed(1)
+x.vec = rnorm(10, 0, 1)
+z.vec = 10*x.vec
+tmp = seq(-3, 3, length.out = 10)
+y.vec=rnorm(10, mean=x.vec, sd=3)
+plot(tmp, 2*tmp, type = "n")
+lm(y.vec~x.vec-1) # make the intercept not considered 
+replicate(20, {y.vec=rnorm(10, mean=x.vec, sd=3)     abline(lm(y.vec~x.vec-1))})
+```
+
+# L 11 
+Case Study
+shows how to address multicollinearity and unusual points (data cleaning) 
+```{r}
+chem_pro.df = read.table("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/chem_pro.csv", sep = ",", header = TRUE)
+# check 
+str(chem_pro.df) # different data type, might be a typo for ratio's type
+
+# convert it to double 
+chem_pro.df$ratio = as.character(chem_pro.df$ratio)
+chem_pro.df$ratio = as.double(chem_pro.df$ratio)
+chem_pro.df$ratio
+
+summary(chem_pro.df) # more test 
+# boxcox plot useful to identify unusual values
+
+par(mfrow = c(1,4))
+lapply(chem_pro.df, boxplot)
+par(mfrow = c(1,1))
+# data cleaning result: unusual point in variable 2 and one in variable 4
+# So we modify the 44th observation and keep record of it
+conversion_typo = which( chem_pro.df$conversion <= -10)
+chem_pro.df$conversion[conversion_typo] = - chem_pro.df$conversion[conversion_typo] # then run boxcox again will find usual plot 
+
+# pairs plot 
+## put histograms on the diagonal, don't know how to show the number 
+panel.hist <- function(x, ...)
+{
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(usr[1:2], 0, 1.5) )
+  h <- hist(x, plot = FALSE)
+  breaks <- h$breaks; nB <- length(breaks)
+  y <- h$counts; y <- y/max(y)
+  rect(breaks[-nB], 0, breaks[-1], y, col = "cyan", ...)
+}
+pairs(chem_pro.df, panel = panel.smooth,
+      cex = 1.5, pch = 24, bg = "light blue", horOdd=TRUE,
+      diag.panel = panel.hist, cex.labels = 2, font.labels = 2)
+
+
+model = lm(yield~conversion + flow + ratio, data = chem_pro.df) # howecer we truely want to check 1/ratio
+# then check the residual plot vs. fitted value / each regressor (conversion/ratio/flow)
+# check independece of residuals, ACF/ previous residual vs. 
+#  normqq / small data size, do shapiro.test check normality 
+
+# stabillity problem 
+# VIF (stability problem)
+Xminus1 = chem_pro.df[, -1]
+VIF = diag(solve(cor(Xminus1))) # inverse of diagonal 
+VIF #  no larger than 10, no multicollinearity 
+
+# unusual points (influence stability problem)
+  # 1. method: pii 
+pii.vec = hatvalues(model) # pii: leverage score 
+order(pii.vec, decreasing = TRUE)
+  # 2. method: influence measure 
+im = influence.measures(model)
+im # Report and possibly delete influential points
+# high leverage, not mean oulier. near regression line: not outlier 
+
+#### check the first theory:Chemical theory predicts yield is related to the reciprocal of ratio
+recip.LM = lm(yield~ conversion + flow +
++ I(1/ratio), data = chem_pro.df)
+summary(recip.LM) # then have siginificace 1/ratio 
+sres = residuals(recip.LM)
+recip_outlier_index = which( sres < -2.5 )
+# then check the residual plot vs. fitted value / each regressor (conversion/ratio/flow) -> find residual vs. flow need to be trandformed
+# -> residual vs. ratiro: curvature due to high leverage point 
+recip_hl_index = which(1/chem_pro.df$ratio > 25)
+recip_hl_index
+ratio_unusual
+chem_pro.df[ratio_unusual,]
+# check independece of residuals, ACF/ previous residual vs. 
+#  normqq / small data size, do shapiro.test check normality 
+
+
+#### check the second theory: predicts yield is related to conversion*flow (interaction)
+
+prod.LM =lm(yield~ conversion + poly(flow,3) + I(1/ratio) + I(flow*conversion),
+data = chem_pro.df)
+prod.res = residuals(prod.LM) # check residuals for the assumptions, seems be satisfied 
+summary(prod.LM) # do not support interaction 
+
+# check VIF for those 
+conversion = chem_pro.df$conversion
+flow = poly(chem_pro.df$flow,3)
+recip_ratio = 1/chem_pro.df$ratio
+prod = chem_pro.df$flow * chem_pro.df$conversion
+Xtd = cbind(conversion, flow, recip_ratio, prod)
+VIF = diag(solve(cor(Xtd)))
+VIF # more than 10  # do not support interaction 
+
+
+# move back to the cubic model 
+cubic.LM = lm(yield~ conversion + poly(flow,3) + + I(1/ratio), data = chem_pro.df)
+# and investigate the e↵ect of unusual points on the model cubic.LM.
+
+```
+
+

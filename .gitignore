@@ -54,3 +54,4 @@ vignettes/*.pdf
 *.jpg
 labref
 *checkpoint.ipynb
+*.icloud

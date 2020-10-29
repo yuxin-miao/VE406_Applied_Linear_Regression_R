@@ -351,11 +351,13 @@ legend("topleft", lty = c(1, 2), col = c(1, 2),
 
 # L03 - LSE & MLE
 
-$MSE(m) = \mathbb{E}[(Y-m)^2] = Var[Y] + (\mathbb{E}[Y-m])^2$ -> bias variance decomposition
+$MSE(m) = \mathbb{E}[(Y-m)^2] = Var[Y] + (\mathbb{E}[Y-m])^2$ 
+
+-> bias variance decomposition
 
 The common model assumptions for slr 
 
-bias of an estimator $\hat{\theta}$, $\theta $ is a fixed population parameter 
+bias of an estimator $\hat{\theta}$, $\theta$ is a fixed population parameter 
 $Bias(\hat{\theta},\theta) = \mathbb{E}[\hat{\theta} - \theta]$
 
 - residual 
@@ -525,11 +527,13 @@ Identity Matrix$I$
 
 unbiased $\mathbf{\hat{\beta}}, \mathbf{\hat{\beta}}\sim\rm{Normal}(\beta,\sigma^2(\mathbf{X^T \mathbf{X}})^{-1})$
 
-Case study: remember the samll dataset, we do not have strong evidence 
-1. drive-in time or dose influences gain linearly O -> F-test
-2. drive-in time influences gain for a given dose linearly -> t-test
-3. dose influences gain for a given drive-in time linearly -> t-test
-4. there is any reason to use both drive-in time and dose to explain gain -> compre with the submodel using adjusted R-squared 
+Case study: remember the small data set, we do not have strong evidence \
+three variables: $y$ as gain; $X$ as driven-in time and dose 
+
+1. drive-in time or dose influences gain linearly O -> F-test \
+2. drive-in time influences gain for a given dose linearly -> t-test \
+3. dose influences gain for a given drive-in time linearly -> t-test \
+4. there is any reason to use both drive-in time and dose to explain  gain -> compare with the submodel using adjusted R-squared 
 
 ```{r}
 # install.packages("xlsx")
@@ -756,4 +760,101 @@ cubic.LM = lm(yield~ conversion + poly(flow,3) + + I(1/ratio), data = chem_pro.d
 
 ```
 
+# L12
+Heteroskedasticity
+```{r}
+cleaning.df = read.table("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/cleaning.txt", header = TRUE)
+summary(cleaning.df)
+cleaning.LM = lm(Rooms~Crews, data = cleaning.df)
+crews.group = factor(cleaning.df$Crews)
+tapply(cleaning.df$Rooms, crews.group, length) # repeated observations 
+convar = tapply(cleaning.df$Rooms,crews.group,var)
+convar # conditional sample variance of the response 
+v.vec = convar[crews.group] # vector of corresponding conditional variance
+w.vec = 1/v.vec # vector of diagonal elements of w
+cleaning.WLS = lm(Rooms~Crews, weights = w.vec, data=cleaning.df) # give the desired estimate of \hat{\beta_w}
 
+# then the residual analysis should be done with  \hat{e_w}=W^{1/2}\hat{e}
+model = cleaning.WLS
+res = residuals(model)
+resw = sqrt(w.vec) * res
+```
+
+as the $\hat{e_i}$ might be very small/large, work with 
+
+$z_i=ln(\hat{e_i}^2)=2ln|\hat{e_i}|$, the log-scale provides extra numerical stability 
+
+
+```{r}
+cvrv.df = read.table("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/cvrv.csv", sep = ",", header = TRUE)
+cvrv.LM = lm(capital~rental, data = cvrv.df)
+cvrv.res = residuals(cvrv.LM)
+plot(fitted.values(cvrv.LM), cvrv.res) # the variance is clearly unequal, and rental varies continuously., not in the same scale
+
+z = 2 * log(abs(cvrv.LM$residuals)) #  z is the auxiliary response,
+auxiliary.LM = lm(z~rental, data = cvrv.df)  # Perform the auxiliary regression
+v.vec = exp(auxiliary.LM$fitted.values) # transform back to have the estimated \sigma 
+w.vec = 1/v.vec
+cvrv.WLS = lm(capital~rental, weights = w.vec, data = cvrv.df) # weight according to the estimated \sigma 
+```
+
+# L13
+correlated errors, check of independence 
+```{r}
+sales.df = read.table("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/sales.txt",  sep = "", header = TRUE)
+sales.LM = lm(sales~advertising, data = sales.df)
+```
+ add lag do not help 
+ 
+ fit the residuals (among previous and current residuals)
+ 
+ $\varepsilon_i = p\varepsilon_{i-1} + v_i$, the true error will add the new $v_i$. So mainly useful for prediction. Bias and variance should be reconsidered. 
+ 
+ $v_i$ is normal, so  $\varepsilon_i$  should be normal 
+ 
+ structure : first-order autoregressive process / AR(1) (important in time series)
+ 
+ **improve the model by fitting the residuals with time series issue**
+ 
+ 
+# L14 variable selection
+
+
+```{r}
+evap.df = read.table("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/evap.txt", header = TRUE)
+# install.packages("leaps")
+
+# try to exhaust all the combinations, use RSS to determine. only look at which term is significant or not: for explain but not prediction 
+regsubsets.out = leaps::regsubsets( evap~., data = evap.df, nbest=1, nvmax = NULL,method = "exhaustive")  # nbset=1: 1 best model for each p
+# NULL for no limit on p
+
+
+# before using any of the method to pick up the best model, we should first check the model assumption
+# when made transformation on regressors, t-test or partial F test should not be used 
+# transform the response : redo the variable selection ! 
+
+
+
+summary(regsubsets.out) # star means regressor that needed 
+
+
+
+plot(regsubsets.out) # related to each of the independent variables 
+plot(regsubsets.out, scale = "r2", main = "R^2") # the darker, the better 
+plot(regsubsets.out, scale = "adjr2", main = "Adjusted R^2")
+plot(regsubsets.out, scale = "Cp", main = "Mallow’s Cp")
+plot(regsubsets.out, main = "BIC")
+```
+
+The validity of the model is a priority especially when the goal is **to explain**.
+
+
+**to predict, different modern approach**: data splitting / cross-validation / bootstrapping 
+
+
+to regulazition: 
+
+**ridge regression:** shrinks the number of coefficients by imposing a penalty, encourages the coefficients to be zero. higher $\lambda$, more penalization. drop the inefficient coefficient. L2norm regulazition 
+*do the normal transformations to it*
+
+**lasso regression:** 

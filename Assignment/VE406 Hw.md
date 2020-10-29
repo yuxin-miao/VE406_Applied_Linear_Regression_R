@@ -108,13 +108,262 @@ Because it is only the confidence interval for the regression function at each $
 
 ### Q1
 
-$\hat{y_1}=\hat{\theta}$
+By the least square principle 
+$$
+\begin{align*}
+(b_0,b_1) = Argmin_{(\beta_0,\beta_1)} \sum^{n}_{i=1}e_i^2
+\end{align*}
+$$
+For the given model, written as 
+$$
+\begin{align*}
+(\hat{\theta},\hat{\phi}) &= Argmin_{(\theta,\phi)} \sum^{3}_{i=1}e_i^2 \\[1ex]
+&= Argmin_{(\theta,\phi)} \sum^{3}_{i=1}(y_i-\hat{y}_i)^2 \\[1ex]
+&= Argmin_{(\theta,\phi)} \{(y_1-\hat{\theta})^2+(y_2-2\hat{\theta}+\hat{\phi})^2+ (y_3-2\hat{\phi}-\hat{\theta})^2  \}
+\end{align*}
+$$
+The we need to take partial dereivative with respect to $\hat{\theta}$ and $\hat{\phi}$ and let it be zero. 
+$$
+\begin{align*}
+&\frac{\partial ((y_1-\hat{\theta})^2+(y_2-2\hat{\theta}+\hat{\phi})^2+ (y_3-2\hat{\phi}-\hat{\theta})^2 )}{ \partial \hat{\theta}} \\[1ex]
+=& 2(\hat{\theta}-y_1) + (8\hat{\theta}-4\hat{\phi}-4y_2) +(2\hat{\theta}+4\hat{\phi}-2y_3) 
+=0  \\[2ex]
+&\frac{\partial ((y_1-\hat{\theta})^2+(y_2-2\hat{\theta}+\hat{\phi})^2+ (y_3-2\hat{\phi}-\hat{\theta})^2 )}{ \partial \hat{\phi}} \\[1ex]
+=&0+(-4\hat{\theta}+2\hat{\phi}+2y_2) + (4\hat{\theta}+8\hat{\phi}-4y_3) 
+=0 \\[1ex]
+&\quad \qquad \qquad\qquad \big{\Downarrow} \\[1ex]
+&\hat{\theta}=\frac{1}{6}y_1+\frac{1}{3}y_2 + \frac{1}{6} y_3  \\[1ex]
+& \hat {\phi} = -\frac{1}{5}y_2 + \frac{2}{5}y_3
+ 
+\end{align*}
+$$
+
+### Q2
+
+1. First, to prove $\mathbf{P}$ is symmetric and idemopotent 
+
+$$
+\begin{align*}
+\mathbf{P^T} &= (\mathbf{X}(\mathbf{X^TX})^{-1}\mathbf{X^T})^T \\[1ex]
+&= \mathbf{X}((\mathbf{X^TX})^{-1})^T\mathbf{X^T} \\[1ex]
+&= \mathbf{X}((\mathbf{X^TX})^{T})^{-1}\mathbf{X^T} \\[1ex]
+&= \mathbf{X}(\mathbf{X^TX})^{-1}\mathbf{X^T} \\[1ex]
+&= \mathbf{P} \Rightarrow \mathbf{P} \rm{\ is \ symmetric} \\[5ex]
+
+\mathbf{P^2} &= (\mathbf{X}(\mathbf{X^TX})^{-1}\mathbf{X^T})(\mathbf{X}(\mathbf{X^TX})^{-1}\mathbf{X^T}) \\[1ex]
+&= \mathbf{X}(\mathbf{X^TX})^{-1}(\mathbf{X^T}\mathbf{X})(\mathbf{X^TX})^{-1}\mathbf{X^T} \\[1ex]
+
+&= \mathbf{P}  \Rightarrow \mathbf{P} \rm{\ is \ idempotent}
+\end{align*}
+$$
+
+​		Then for $\mathbf{I-P}$, as $\mathbf{I}$ is the identity matrix, which is symmetric. So $\mathbf{I-P}$ is symmetric. 
+$$
+\begin{align*}
+(\mathbf{I-P})^2 &= \mathbf{I}^2 + \mathbf{P}^2 - 2\mathbf{I}\mathbf{P} \\
+&= \mathbf{I} + \mathbf{P} - 2\mathbf{P}\quad [\rm{symmetric}] \\
+&= \mathbf{I-P}  \Rightarrow \mathbf{I-P} \rm{\ is \ idempotent}
+
+\end{align*}
+$$
+​		Therefore, we prove that $\mathbf{P}, \mathbf{I-P}$ are both symmetric and idempotent.
+
+
+
+2. $$ {!h}
+   \begin{align*}
+   \hat{e}^T\hat{y} &= ((\mathbf{I-P})y)^T\mathbf{P}y \\[1ex]
+   &= y^T (\mathbf{I-P})\mathbf{P}y  \\[1ex]
+   &= y^T (\mathbf{P-P^2})y \quad [\mathbf{P} \rm{\ is \ idempotent} ]\\[1ex] 
+   &= 0
+   \end{align*}
+   $$
+
+   Then we have proved. 
+
+   
+
+3. $$ {!h}
+   \begin{align*}
+   Var[\hat{e}] &= Var[\mathbf{(I-P)}y] \\[1ex]
+   &= \mathbf{(I-P)}Var[y]  \mathbf{(I-P)}^T  \\[2ex]
+   Cov[\mathbf{\hat{e}}|\mathbf{X}] &= Cov[\mathbf{(I-P)(X}\beta+\varepsilon)|\mathbf{X}] \\[1ex]
+   &=\mathbf{(I-P)} Cov[\mathbf{}\varepsilon|\mathbf{X}]\mathbf{(I-P)}^T\\[1ex]
+   &= \sigma^2\mathbf{(I-P)}
+   \end{align*}
+   $$
+
+   so that $Cov[\hat{e}_i,\hat{e}_j|\mathbf{X}]=-\sigma^2p_{ij}$
+
+
+
+4. 
+
+
+
+### Q3
+
+1. Proof
+
+   As the F statistic is expressed as 
+   $$
+   F_{k,n-k-1} = \frac{(TSS - RSS)/k}{RSS/(n-k-1)}
+   $$
+   where $TSS$ is the total sum of square, $RSS$ is the residual sum of square.
+
+   Also the 
+   $$
+   R^2 = 1 - \frac{RSS}{TSS} = \frac{TSS - RSS}{TSS}
+   $$
+   so we have 
+   $$
+   \frac{TSS - RSS}{RSS} = \frac{TSS - RSS}{TSS}\times \frac{TSS}{RSS}=\frac{R^2}{1-R^2}
+   $$
+   then conclude that 
+
+$$
+F = \frac{(TSS - RSS)/k}{RSS/(n-k-1)}=\frac{R^2/k}{(1-R^2)/(n-k-1)}
+$$
+
+2. Find Probability
+
+   calculate that 
+   $$
+   F_{4,15}=\frac{R^2/k}{(1-R^2)/(n-k-1)}=\frac{0.9/4}{(1-0.9)/(20-4-1)}=33.75
+   $$
+   So we find the probability by 
+
+   <img src="/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/Assignment/image-20201028204130318.png" alt="image-20201028204130318" style="zoom:50%;" />
+
+   then the probability is $4.90153 \times 10^{-7}$.
+
+3. Conclusion
+
+   There is evidence to reject that all the predictors are not significant, we could conclude that at least one of the four regressors is siginificant (i.e. $\beta_0=\beta_1=\beta_2=\beta_3=0$ do not hold )
+
+
+
+### Q4
+
+From the equation $x_{ij}=k_jw_{ij}$, as $\mathbf{K}$ is the diagonal matrix 
+$$
+\begin{align*}
+\mathbf{K} &= \begin{pmatrix}
+ k_1 & 0 &  \cdots & 0 \\
+ 0 & k_2 & \cdots & 0 \\
+ \vdots  & \vdots & \ddots & \vdots \\
+ 0 & 0 & \cdots & k_k \\
+\end{pmatrix} \\[2ex]
+\mathbf{X}& = \mathbf{W}\mathbf{K}
+
+\end{align*}
+$$
+Before scaling, if equal variance, we have
+$$
+\begin{align*}
+Y_i &= \beta_0 + \beta_1X_{i1}+...+\beta_{k}X_{ik}+\varepsilon_{i} \quad \rm{where}\ \varepsilon_i\sim N(0, \sigma^2) \\[2ex]
+\mathbf{\hat{Y}} &= \mathbf{X}(\mathbf{X}^T\mathbf{X})^{-1}\mathbf{X}^Ty 
+
+\end{align*}
+$$
+ Then replace $\mathbf{X}$ with $\mathbf{WK}$
+$$ {!h}
+\begin{align*}
+
+\mathbf{\hat{Y}} &= \mathbf{X}(\mathbf{X}^T\mathbf{X})^{-1}\mathbf{X}^Ty  \\[1ex]
+&=\mathbf{WK}(\mathbf{(WK)}^T\mathbf{WK})^{-1}\mathbf{(WK)}^Ty \quad \rm{as \ \mathbf{K}^T=\mathbf{K}} \\[1ex]
+&= \mathbf{WK}(\mathbf{KW}^T\mathbf{WK})^{-1}\mathbf{KW}^Ty \\[1ex]
+&= \mathbf{WW^{-1}}(\mathbf{W}^T)^{-1}\mathbf{W}^Ty \\[1ex]
+&= \mathbf{W}(\mathbf{W}^T\mathbf{W})^{-1}\mathbf{W}^Ty
+
+\end{align*}
+$$
+So the equation is unchanged.
 
 ### Q5
 
-1. 
+1. Based on the LSE principle $
+   \left(
+   \begin{array}
+   {c}
+   \hat{\beta}_0\\
+   \hat{\beta}_1\\
+   \end{array}
+   \right) =(\mathbf{X^TX})^{-1}\mathbf{X^T}y $
 
-   Based on the model $\mathbb{E}[Y|X] = \beta_0+\beta_1x$, choose $\hat{\beta}=\mathbf{b}$
+   As for the model, we have $\mathbf{X} = \left(
+   \begin{array}
+   {ccc}
+   1&-1\\
+   1&0\\
+   1&1
+   \end{array}
+   \right)$
 
-   $\hat{e}=\mathbf{y}-\hat{y}=\mathbf{\beta}f(b_0,b_1)=$
+   while the true mean given $\mathbf{X} = \left(
+   \begin{array}
+   {ccc}
+   1&-1&1\\
+   1&0&0\\
+   1&1&1
+   \end{array}
+   \right)$
 
+   So we could plug in the corresponding value and find $\hat{\beta}_0, \hat{\beta}_1$ and $\beta_0, \beta_1, \beta_2$ respectively. The result is 
+   $$
+   \begin{align*}
+   \hat{\beta_0}&=\frac{1}{3}(y_1+y_2+y_3), \ \hat{\beta_1}=\frac{-1}{2}y_1+\frac{1}{2}y_3 \\[2ex]
+   \beta_0&=y_2,\ \beta_1=\frac{-1}{2}y_1+\frac{1}{2}y_3 , \ \beta_2=\frac{1}{2}y_1-y_2+\frac{1}{2}y_3 \\[3ex]
+   &\mathbb{E}[\hat{\beta}_0-\beta_0] = \mathbb{E}[\hat{\beta}_0]-\beta_0=\frac{1}{3}(y_1+y_3)-\frac{2}{3}y_2 &\Rightarrow biased \\[1ex]
+   
+   &\mathbb{E}[\hat{\beta}_1-\beta_1] = \mathbb{E}[\hat{\beta}_1]-\beta_1=0 &\Rightarrow unbiased 
+   
+   \end{align*}
+   $$
+   
+
+2. Similar procedure, find that 
+   $$
+   \begin{align*}
+   \hat{\beta_0}&=y_2, \ \hat{\beta_1}=\frac{-1}{2}y_1+\frac{1}{2}y_3,\ \hat{\beta}_2=\frac{1}{2}y_1-y_2+\frac{1}{2}y_3  \\[2ex]
+   \beta_0&=\frac{1}{3}(y_1+y_2+y_3), \ \beta_1=\frac{-1}{2}y_1+\frac{1}{2}y_3 \\[3ex]
+   
+   &\mathbb{E}[\hat{\beta}_0-\beta_0] = \mathbb{E}[\hat{\beta}_0]-\beta_0=y_2-\frac{1}{3}(y_1+y_2+y_3) &\Rightarrow biased \\[1ex]
+   
+   &\mathbb{E}[\hat{\beta}_1-\beta_1] = \mathbb{E}[\hat{\beta}_1]-\beta_1=0 &\Rightarrow unbiased  \\[1ex]
+   &\mathbb{E}[\hat{\beta}_2-\beta_2] = \mathbb{E}[\hat{\beta}_2]-0=\frac{1}{2}y_1-y_2+\frac{1}{2}y_3  &\Rightarrow biased 
+   
+   \end{align*}
+   $$
+   All unbiased .
+
+3. 
+   $$ {!ht}
+   \begin{align*}
+   Fisrt\ Case:&\\[1ex]
+   Var[\hat{\beta}|\mathbf{X}]&=Var[(\mathbf{X^TX})^{-1}\mathbf{X^T}y ] \\[1ex]
+   &=(\mathbf{X^TX})^{-1}\mathbf{X^T} Var[y ]\mathbf{X} (\mathbf{X^TX})^{-1} \\[1ex]
+   &= (\mathbf{X^TX})^{-1}\mathbf{X^T} Var[\varepsilon ]\mathbf{X} (\mathbf{X^TX})^{-1} \\[1ex]
+   &= \sigma^2(\mathbf{X^TX})^{-1} \\[1ex]
+   &= \sigma^2  \left(
+   \begin{array}
+   {ccc}
+   \frac{1}{3}&0\\
+   0& \frac{1}{2}
+   \end{array}
+   \right) \Rightarrow Var[\hat{\beta}_1|\mathbf{X}]=\frac{\sigma^2}{2} \\[3ex]
+   Second\ Case:&\\[1ex]
+   Var[\hat{\beta}|\mathbf{X}]&=Var[(\mathbf{X^TX})^{-1}\mathbf{X^T}y ] \\[1ex]
+   &= \sigma^2  \left(
+   \begin{array}
+   {ccc}
+   1 &0&-1\\
+   0& \frac{1}{2} &0 \\
+   -1 &0 &\frac{3}{2}
+   \end{array}
+   \right) \Rightarrow Var[\hat{\beta}_1|\mathbf{X}]=\frac{\sigma^2}{2}
+   \end{align*}
+   $$
+   
+
+4. When the correct model used, the variance is same as calculated in **3**. So the variance of the estimator will not be affected by the incorrect model. 

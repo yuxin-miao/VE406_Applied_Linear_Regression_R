@@ -598,7 +598,8 @@ Example1: only drop variables after check residual plots (all the assumptions ar
 sim.df = read.csv("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/sim_poly_class.csv.bz2")
 str(sim.df)
 sim.LM = lm(y~x1+x2+x3, data = sim.df)
-# plot the residuals, find non-random, indeicate nonlinearity
+plot(sim.LM, which=1)
+# plot the residuals, find non-random, indicate nonlinearity
 # The nonlinearity would be clearer if add estimated conditional mean to the residual plot 
 c.mean.plot = function(tmp.x, tmp.y, n.each, pos = "topleft"){ n.x = rounod(length(unique(tmp.x)) / n.each)
 x.group = cut(tmp.x, breaks = n.x, labels = FALSE)

@@ -859,3 +859,457 @@ to regulazition:
 *do the normal transformations to it*
 
 **lasso regression:** 
+
+
+# L15 nonlinear regression 
+
+Least square estimation for solving non linear regression is same as for linear regression, but no closed-form exists. Numerically solve, start with a good initial value. 
+
+MLE and LSE still identical. in order to solve MLE, has the score equation. 
+
+**Example**
+```{r}
+plot.new
+quartz()
+puromycin.df = read.table("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/puromycin.txt", header = TRUE)
+str(puromycin.df)
+
+# know the expectation: E[Velocity|Concentration] = (\beta_1 Concentration) / (\beta_2 + Concentration), with unknown parameter \beta_1 and \beta_2
+
+#Create a grid 
+p1n = 100; p2n = 100
+par1.vec = seq(170, 260, length = p1n) 
+par2.vec = seq(0.01, 0.15, length = p2n)
+grid = expand.grid(par1.vec, par2.vec)
+
+# RSS function
+my.func = function(x){
+  fvs = x[1]*puromycin.df[,1]/
+    (x[2]+puromycin.df[,1]) 
+  res = puromycin.df[,2] - fvs 
+  sum(res^2)
+}
+
+# Values of the Objective function
+RSS = matrix(
+apply(grid, MARGIN = 1, FUN = my.func), nrow = p1n, ncol = p2n)
+
+# Contour base
+filled.contour(par1.vec, par2.vec, RSS, color.palette=terrain.colors)
+# Align contour lines with the base
+mar.orig = par("mar")
+w = (3 + mar.orig[2]) * par("csi") * 2.54 
+layout(matrix(c(2,1), nc = 2), widths = c(1,lcm(w)))
+# Add Contour lines to the base
+lev = pretty(range(RSS), 50) 
+plot.new
+contour(par1.vec,par2.vec,RSS, levels = lev,
+    drawlabels = TRUE, lty = 2, axes = FALSE, frame.plot = FFALSE, add = TRUE)
+title(xlab = expression(beta[1]), ylab = expression(beta[2]), main = "Contour Of RSS", sub = "puromycin.NL")
+
+```
+
+Based on the obtained contour of RSS, observe the better region (RSS close to 0), then zoom in (210, 0.07 as the initial guess)
+
+```{r}
+# Initial guess based on the contour plot
+initial = list(par1=210, par2=0.07)
+# Gauss-Newton is the default algorithm in R
+parameter_each = capture.output({ puromycin.NL = nls(
+Velocity~ par1*Concentration/(par2+Concentration),
+start = initial, data = puromycin.df,
+trace = TRUE) }) # with capture.output, we could get RSS and parameter in each iteration
+
+model = puromycin.NL
+model
+
+```
+```{r}
+parameter_each # with capture.output, we could get RSS and parameter in each iteration
+```
+
+"Nonlinear regression uses an iterative algorithm to reduce the error sums of squares (SSE). For each iteration, the algorithm adjusts the parameter estimates in a manner that it predicts should reduce the SSE compared to the previous iteration. The iterations continue until the algorithm converges on the minimum SSE, "
+
+```{r}
+tmp = strsplit(parameter_each, " ") # Split according to a single white space
+str(tmp)
+# Coerce into a vector 
+pei.vec = unlist(tmp)
+pei.vec
+n.itera = length(tmp); n.element = length(tmp[[1]])
+index_1 = seq(4, by = n.element, length = n.itera) 
+index_2 = seq(7, by = n.element, length = n.itera)
+par1.vec = as.numeric(pei.vec[index_1]) # vector of the first parameter
+par2.vec = as.numeric(pei.vec[index_2]) # vector of the second parameter
+plot(par1.vec, type='o', xlab = "Index", ylab = "par1.vec", main = "beta_1", sub = "Velocity ~ par1 * Concentration/(par2 + Concentration)")
+plot(par2.vec, type='o', xlab = "Index", ylab = "par1.vec", main = "beta_1", sub = "Velocity ~ par1 * Concentration/(par2 + Concentration)")
+
+plot(puromycin.df$Concentration)
+lines(puromycin.df$Concentration,predict(model),col="red",lty=2,lwd=3)
+```
+
+(? Puromycin.NL Fit not finished )
+
+For this particular nonlinear model, it could be transformed into a linear model 
+
+$\frac{\beta_1 c}{\beta_2 + c} = \frac{\beta_2}{\beta_1c}+\frac{1}{\beta_1}+\varepsilon^*$ not a same error now 
+```{r}
+Con.reciprocal = 1/puromycin.df$Concentration # get the reciporal of each variable 
+Vel.reciprocal = 1/puromycin.df$Velocity
+p.reciprocal.df = data.frame( Con.reciprocal = Con.reciprocal, Vel.reciprocal = Vel.reciprocal)
+p.reciprocal.LM = lm(Vel.reciprocal~Con.reciprocal, data = p.reciprocal.df)
+
+# !IMPORTANT! Back transform 
+a.vec = p.reciprocal.LM$coefficients
+paras.t.vec = c(1/a.vec[1], a.vec[2]/a.vec[1])
+```
+
+(? transformed graph not finished)
+
+
+**Diagnostics**
+
+For nonlinear regression, large sample size, the sampling distribution approaches normal 
+
+
+*Wald test and Wald interval*
+
+For hypothesis testing and confidence interval respectively 
+
+in summary, t-statistic and p-values are those for Wald test, only meant to be used for a really big sample. 
+```{r}
+summary(puromycin.NL) 
+```
+
+*bootstrap*
+
+used at least to check whether large-sample inference is appropriate. 
+"construct the sampling distribution of the estimators in a nonlinear regression model, which then can be used to compute estimated standard errors, thus produce confidence intervals and prediction intervals.
+"
+
+用原有的X，把estimate的beta作为true parameter，并且error$\delta \sim^{i.i.d} Normal(0,\hat{\sigma}^2)$. Then generate $M$ sets of size-n samples of $Y_i$ based on the model with original $X$. Each of simulated dataset gives one $\beta$. Then the M samples of $\beta$ are used to approximate the sampling distribution of $\hat{\beta}$
+
+```{r}
+M = 10000 ## Bootstrapping
+n = nrow(puromycin.df)
+fvs = fitted.values(puromycin.NL)
+vel.vec = fvs + # Generate the responses 
+  rnorm(M*n, 0, summary(puromycin.NL)$sigma) # and \sigma 
+vel.mat = matrix(vel.vec, nrow = M,
+ncol = n, byrow = TRUE)
+
+my.func = function(x){ 
+  tmp.NL = nls(
+    x~par1*Concentration/(par2+Concentration), 
+    start = list(par1=210, par2=0.07),
+    data = puromycin.df)
+  tmp.NL$m$getPars()
+}
+parameter.sim = apply(vel.mat, MARGIN = 1, FUN = my.func)
+p = 1
+hist(parameter.sim[p,], probability = TRUE, xlab = bquote(hat(beta)[.(p)]), breaks = 30, main = bquote(paste(
+"Bootstrap Sampling distribution of ", hat(beta)[.(p)])) )
+
+tmp.x = seq(min(parameter.sim[p,]), max(parameter.sim[p,]), length = 100)
+tmp.y = dnorm(tmp.x, puromycin.NL$m$getPars()[p], sqrt(vcov(puromycin.NL)[p,p]))
+lines(density(parameter.sim[p,]), col = 2, lty = 2)
+lines(tmp.x, tmp.y, col = 4, lty = 3)
+legend("topright", lty = 2:3, col = c(2, 4), legend = c("KDE", expression(infinity)))
+# ? what to get from this plot 
+```
+
+```{r}
+# ?? 
+# C.I. for parameters
+quantile(parameter.sim[1,], probs=c(0.025, 0.975))
+
+con.pred = 0.8 # C.I for conditional mean
+fvs.sim = parameter.sim[1,]*con.pred/(parameter.sim[2,]+con.pred)
+quantile(fvs.sim, probs=c(0.025, 0.975))
+v.sim = fvs.sim + # Prediction interval 
+  rnorm(M, 0, summary(puromycin.NL)$sigma)
+quantile(v.sim, probs=c(0.025, 0.975))
+```
+Until now, we assumed that the errors following a normal distribution 
+# L16 Logistic regression 
+Mathematical equation / induction, see $Notes.md$
+```{r}
+credit.df = read.table("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/credit.csv", header = TRUE, sep = ",")
+str(credit.df)
+# visualize the data
+# Scatter plot
+index0 = (credit.df$default == 0L) 
+index1 = (credit.df$default == 1L)
+plot.new() # find default yes / no : two types 
+plot(income~balance, type="n",  data = credit.df, xlab = "balance", ylab = "income", main = "Credit Default") + # type n: no display 
+points(credit.df[index0, 3], credit.df[index0, 4], col = "deepskyblue", pch = 1) + points(credit.df[index1, 3], credit.df[index1, 4],
+col = "chocolate", pch = 4) 
+legend("topright", c("Default No", "Default Yes"), col = c("deepskyblue", "chocolate"),
+pch = c(1, 4)) # error due to R markdown, should be fine in R 
+# no difference caused by income, balance caused a difference 
+
+```
+```{r}
+# Boxplot, further examine the difference caused by balance 
+boxplot(balance~default, data = credit.df,
+col = c("deepskyblue", "chocolate"), boxwex = 0.25, xlab = "Default",
+ylab = "Balance", names = c("No", "Yes"), main = "Balance by Default")
+
+# Mosaicplot->student more likely to default 
+mosaicplot(
+  table(list(
+    Default = factor(credit.df$default, 
+                     labels = c("No", "Yes")), 
+    Student = credit.df$student)),
+    col = c("deepskyblue", "chocolate"),
+  main = "mosaicplot of Default by Student"
+)
+```
+
+
+Use the logistic function
+
+```{r}
+# glm + binomial family, means logistic regression 
+# logistic regression for one predictor 
+credit.LG = glm(default~balance, family = binomial, data = credit.df)
+coef(credit.LG)
+newdata.df = data.frame(balance = 1000)
+mhat = predict(credit.LG, newdata = newdata.df, type = "response") # response gives the probability 
+mhat # same as exp(beta_0+beta_1 * 1000) / (1 + exp(beta_0 + beta_1 * 1000))
+logit.credit = predict(credit.LG, newdata = newdata.df) # logit
+(os = mhat/(1-mhat)) # odds
+log(os) # log odds (=logit), so we could see how to get the response (mhat) from logit (log(os))
+exp(logit.credit) / (1 + exp(logit.credit)) # = mhat (probability)
+summary(credit.LG)
+```
+```{r}
+# logstic regression for more than one predictors 
+credit.all3.LG = glm(default~balance+income+student, family = binomial, data = credit.df)
+summary(credit.all3.LG) 
+# LR test of significance, similar to F-test
+credit.null.LG = glm(default~1, family = binomial, data = credit.df)
+LR.test = 2*(logLik(credit.all3.LG)[1] -logLik(credit.null.LG)[1]) # compare full with null model, so three beta reduced to zero, degree of freedom should be 3 
+1-pchisq(LR.test, 3) # significantly strong evidence to reject that the reduced model is adequate
+
+# LR test for reduced, similar to partial F-test
+credit.no.income.LG = glm(default~.-income, family = binomial, data=credit.df) # must be the submodel (to the model going to be compared)
+LR.test = 2*(logLik(credit.all3.LG)[1] -logLik(credit.no.income.LG)[1])
+
+1-pchisq(LR.test, 1) # fail to reject, only reduce one model, degree of freedom is 1 
+```
+However, no way to check the validity of the model, and appropriateness of using asymptotic approximation, care with **small n** ! 
+
+**Group dataset**
+
+Group: means there are groups of data points that have the same $\mathbf{X}$
+```{r}
+# group logistic regression 
+ingots.df = credit.df = read.table("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/ingots.csv", header = TRUE, sep = ",")
+ingots.df # 20 binomial distributions 
+ingots.LG = glm(notready/total~heat+soak, family = binomial, data = ingots.df, weights = total)
+summary(ingots.LG)
+```
+```{r}
+# check the residuals
+# 1. Pearson Residual vs. fitted conditional probability 
+pres = residuals(ingots.LG, type = "pearson")
+fvs = predict(ingots.LG, type = "response") # response give the m, the probability 
+plot(fvs, pres, xlab="Fitted Conditional Probability", ylab = "Pearson residuals", main="Residual Plot", sub = deparse(ingots.LG$formula))
+
+# 2. Pearson Residuals vs. Logit 
+fvs = predict(ingots.LG, type = "link") # logit 
+plot(fvs, pres, xlab="Logit", ylab = "Pearson residuals", main="Residual Plot",sub = deparse(ingots.LG$formula))
+```
+
+**Simulation study**
+
+for grouped dataset, shows finding the outliers / leverage point using residual plot, how the model change after removing those points. 
+```{r}
+# simulation study
+set.seed(1)
+n = 100 
+x1 = rnorm(n, mean = 0, sd = 6)
+x2 = rt(n, df = 1) # random student t distribution 
+x3 = rbinom(n, size = 1, prob = 0.45)
+beta0 = 0.6
+beta1 = 0.3
+beta2 = 0.1
+beta3 = 0.1 
+logit = beta0 + beta1*x1 + beta2*x2 + beta3*x3 
+true.pi = exp(logit)/(1+exp(logit))
+m = 100 
+y = integer(n)
+for (i in 1:n){
+  y[i] = rbinom(1, size = m, prob = true.pi[i])
+} # simulated y 
+sim.df = data.frame(y = y, x1 = x1, x2 = x2, x3 = x3, total = rep(m, n)) # simulated y
+sim.LG = glm(y/total~x1+x2+x3, family = binomial, weights = total , data = sim.df)
+res = residuals(sim.LG, type="pearson")
+logit = predict(sim.LG) # default logit
+prob = predict(sim.LG, type = "response") # Prob
+plot(logit, res, xlab="Logit", ylab = "Pearson residuals", main="Residuals vs Estimated log odds", sub = deparse(sim.LG$formula))
+
+plot(prob, res, xlab="Fitted Conditional Probability", ylab = "Pearson residuals", main="Residuals vs Estimated Pr[Y|X=1]", sub = deparse(sim.LG$formula))
+plot(res, type="n",
+ylab = "Pearson Residuals", main="y/total~x1+x2+x3")
+text(logit); abline(h=0,lty=3) 
+plot(logit[-c(83)], res[-c(83)], xlab="Logit", ylab="Pearson residuals") 
+
+# what happens if exclude point index 83 ?
+lines(smooth.spline(logit[-c(83)], res[-c(83)]), col = 2, lty = 2)
+lines(smooth.spline(logit, res), col = 4, lty = 2)
+legend("topright", c("83 in", "83 out"), col = c(2, 4), lty = 2)
+
+# high leverage points 
+head(sort(hatvalues(sim.LG), decreasing = TRUE)) # hatvalues: compute some of the regression (leave-one-out deletion) diagnostics for linear and generalized linear models 
+# highest: 21
+
+# influential points 
+head(sort(cooks.distance(sim.LG), decreasing = TRUE))
+# highest: 21 > 83
+
+# 21: high leverage influential point, 83: influential outlier, exclude them in the final model 
+sim.final.LG = glm(y/total~x1+x2+x3, family=binomial, weights = total, data=sim.df[-c(83, 21),])
+# which gives the approximate input beta 0-3: 0.6, 0.3, 0.1, 0.1 
+
+
+# R_d^2 is 
+1-sim.final.LG$deviance/sim.final.LG$null.deviance
+# =0.97, model capture most of the deviation in the date 
+```
+
+
+# L17 Poisson
+
+```{r}
+bomber.df = read.table("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/aircraft.csv", header = TRUE, sep = ",")
+str(bomber.df)
+# the MLE of beta 
+bomber.PS = glm(Damage ~ Type + Month + Load, family=poisson, data=bomber.df)
+bomber.PS
+
+
+s1 <- data.frame(Type = 0, Month = mean(bomber.df$Month), Load = mean(bomber.df$Load))
+predict(bomber.PS, s1)  # log of count 
+        
+exp(predict(bomber.PS, s1))
+predict(bomber.PS, s1, type='response')  # count 
+# the deviance 
+1-bomber.PS$deviance/bomber.PS$null.deviance # 0.51: not a very good model, only explains 0.51 
+
+# LR-test 
+1-pchisq(bomber.PS$deviance,bomber.PS$df.residual) # 0.46: large p-value -> no evidence of lack of fit 
+
+  # significance 
+1-pchisq(bomber.PS$null.deviance,bomber.PS$df.null) # 0.0033: small p-value: at least one of the regressors is needed 
+
+# for small sample & lack of distribution, do bootstrap (check the validity of using asymptotic approximation)
+M = 100000 # bootstrap simulation
+n = nrow(bomber.df)
+fvs = fitted.values(bomber.PS) # mhat = mean 
+dam.vec = rpois(M, lambda = fvs) # specify paramter of poisson to be the estimate, vector of means 
+dam.mat = matrix(dam.vec, nrow = M,
+ncol = n, byrow = TRUE)
+my.func = function(x){
+  tmp.PS = glm(x ~ Type + Month + Load,
+              family=poisson, data=bomber.df) 
+  return(c(tmp.PS$deviance, tmp.PS$null.deviance))
+}
+
+parameter.sim = apply(dam.mat, MARGIN = 1, FUN = my.func)
+p = 1
+hist(parameter.sim[p,], probability = TRUE, xlab = bquote(hat(beta)[.(p)]), breaks = 30, main = bquote(paste(
+"Bootstrap Sampling distribution of ", hat(beta)[.(p)])) )
+```
+? poisson bootstrap 
+
+```{r}
+summary(bomber.PS)
+```
+
+**Model Selection**
+
+1. get the models 
+2. small datasize, use bootstrap simulation
+3. at this case, determine based on the estimated MSE
+
+```{r}
+# select among these models 
+bomber.PS = glm(Damage ~ Type + Month + Load, family=poisson , data=bomber.df)
+bomber.Month.PS = glm(Damage ~ Month , family=poisson ,
+data=bomber.df)
+bomber.no.Type.PS = glm(Damage ~ Month + Load, family = poisson, data=bomber.df)
+bomber.sq.PS = glm(Damage ~ Type + Month + poly(Load,2), family = poisson, data = bomber.df)
+```
+
+
+```{r}
+# way to generate the above three models in more systematic way 
+varname = names(bomber.df)
+r.vec = varname[1]
+p.vec = varname[-1]
+k = length(p.vec)
+
+my.func = function(x){
+# Generate all combinations
+combn(1:k , x, simplify = FALSE)
+}
+# Indices for all possible sub-models
+index = unlist(
+lapply(1:k, FUN = my.func), recursive = FALSE)
+
+my.func = function(x) {
+  # create a formula 
+  as.formula(
+        paste(r.vec[1],
+             paste(p.vec[x], collapse = "+"),
+             sep = "~")
+  )
+}
+# Generate all the formulas for linear terms
+formula.data = lapply(index, FUN = my.func)
+
+# Create the formula for the poly term
+poly = update(formula.data[[4]], ~.+poly(Load, 2))
+
+# Final formula set, same as the formula we proposed before that want to select 
+formula.vec = c(formula.data[c(7,2,6)], poly)
+
+# number of models = 4
+n.model = length(formula.vec)
+
+my.func = function(x){
+  # Run each model on bootstrap data
+  tmp.mat = matrix(nrow = n, ncol = n.model) 
+  for (i in 1:n.model){
+    
+    tmp.PS = glm(formula.data[[i]], family=poisson, 
+                 data=bomber.df[x,])
+    tmp.mat[, i] = predict(tmp.PS, type = "response", 
+                           newdata = bomber.df)
+  }
+  return(colMeans((tmp.mat - bomber.df[,"Damage"])^2))
+  # return mean square error for each model 
+}
+
+M = 10000
+n = nrow(bomber.df) # size of original dataset 
+index.mat = matrix(sample(1:n, size = M*n, replace = TRUE), 
+                   nrow = M, ncol = n, byrow = TRUE)
+mse.sim = apply(index.mat, MARGIN = 1, FUN = my.func) # M new data, MSE for each model of each new data 
+rowMeans(mse.sim) # choose based on the estimated MSE of this bootstrap simulation
+
+```
+
+
+
+#  GEE
+```{r}
+# It is clear that the measurement taken on the same device may be correlated.
+semiconductor.df = read.table("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/semiconductor.txt", colClasses = c(rep("factor", 7), "numeric"), header = TRUE)
+str(semiconductor.df, vec.len = 3)
+
+# Cluster: fixed group 
+```
+

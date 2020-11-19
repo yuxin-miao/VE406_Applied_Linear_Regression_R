@@ -1,0 +1,190 @@
+---
+title: 
+  "Introduction to R Markdown"
+author: 
+  "Tong Zhu"
+date: 
+  '27 October 2020'
+header-inclues:
+  - \usepackage{amsmath}
+  - \usepackage{amssymb}
+  - \usepackage{amsthm}  
+  - \usepackage{amsthm}  
+  - \usepackage{listings}
+output: 
+  pdf_document:
+    fig_width: 6
+    fig_height: 6
+---
+
+# Abstract
+
+In this file, Latex code, R code and R ouput are written, run/complied and presented as a whole automatically. This is known as _R Markdown_ file. It is particularly useful for writing reports in data science.  
+
+# Introduction
+
+There are a large number of jobs that you could do with _R Markdown_:
+
+  + Compile a single R Markdown document to a report in different formats, such as PDF or HTML.
+
+  + Create notebooks in which you can directly run code chunks interactively.
+
+  + Make slides for presentations (HTML5, LaTeX Beamer, or PowerPoint).
+
+  + Produce dashboards with flexible, interactive, and attractive layouts.
+
+  + Build interactive applications based on Shiny.
+
+  + Write journal articles.
+
+  + Author books of multiple chapters.
+
+  + Generate websites and blogs.
+
+In other words, this is kind of a Latex file. The difference is that it has fewer latex features, but in return, the syntax is easier to handle and you can incorporate R code into it. See the three files that I uploaded on Canvas for more information.  
+
+
+```{r eval = FALSE}
+render("lab3_intro.Rmd")
+```
+
+# Methods 
+
+## Math in R Markdown
+
+Usual syntax in Latex works in _R Markdown_. Inline math is marked off with a pair of dollar
+signs (`$`), as $\left( \mathbf{X}^{\operatorname{T}}\mathbf{X}\right)^{-1}\mathbf{X}^{\operatorname{T}}\mathbf{y}$. Mathematical displays are marked off with `\[` and `\]`, as in
+\[
+  f\left(x ; \mu, \sigma^2\right) = \frac{1}{\sqrt{2\pi\sigma^2}} \exp \left( - \frac{\left( x-\mu\right)^2}{2\sigma^2}\right)
+\]
+
+
+## R code
+
+A _R Markdown_ file combines your Latex file with your R script file. 
+
+```{r}
+my.mean.func = function(x){
+  mean(x)
+}
+
+my.mean.func(1:10)
+```
+
+
+## R output
+
+By default R code will be run. But we can adjust things to be included in the pdf file. 
+
+Notice $a$, $b$, $c$ and $d$ are all generated in R. 
+
+$a$: Both the statement and the output are shown in the pdf file. 
+```{r}
+a = rnorm(10)
+a
+```
+
+$b$: Only the output is shown in the pdf file, but not the statement
+```{r echo = FALSE}
+b = rnorm(10)
+b
+```
+
+$c$: Only the statement is shown in the pdf file, but not output.
+```{r results = 'hide'}
+c = rnorm(10)
+c
+```
+
+$d$: Neither the statement nor the output is shown in the pdf file. 
+```{r include = FALSE}
+d = rnorm(10) 
+d
+```
+
+## Inline R Code
+
+Of course, sometime you need a number from your data analysis. This can be easily obtained and updated in _R Markdown_ file, e.g. There are `r length(a)` elements in $a$, and the mean of $b$ is `r mean(b)`. 
+
+## Plot 
+
+One of the best features of R markdown is graphs are automatically generated and included in the pdf file. 
+
+```{r}
+library(MASS)
+data(cats)
+plot(Hwt ~ Bwt, data = cats, xlab = "Body weight (kg)", ylab = "Heart weight (g)")
+```
+
+
+There are a bunch of options for adjusting the placement of the plot which
+R produces.  
+
+```{r, fig.align="center", out.width="50%", out.height='50%'}
+plot(Hwt ~ Bwt, data = cats, xlab = "Body weight (kg)", ylab = "Heart weight (g)")
+```
+
++ The option `fig.align` controls the horizontal **alignment** (left, right,
+or center).
+
++ The options `out.height` and `out.width` let you specify
+the desired height or width of the figure. 
+
+## Tables 
+
+The default summary output in R is too ugly to be included in a formal report. Compare the followings:
+
+```{r without knitr}
+coefficients(summary(lm(Hwt ~ Bwt, data=cats)))
+```
+
+
+```{r with knitr}
+library(knitr) # Only need this the first time!
+kable(coefficients(summary(lm(Hwt ~ Bwt, data=cats))))
+```
+
+## Computationally intense task
+
+By default, R Markdown will re-run all of your code every time you render/knit your
+document.  If some of your code is slow, this can add up to a lot of time.  You
+can, however, ask R Markdown to keep track of whether a chunk of code has
+changed, and only re-run it if it has.  This is called **caching** the chunk.
+
+```{r, cache=TRUE}
+data.sim.vec = rnorm(1e6)
+x.vec = sort(data.sim.vec)
+y = max(x.vec)
+```
+
+
+# Results, conclusions and recommendations 
+
+In addition to executing R code chunks, it can also execute chunks in a variety of other languages that are widely used in data science. Some of the available language engines include:
+
++ Python
+
++ SQL
+
++ Bash
+
++ Rcpp
+
++ Stan
+
++ JavaScript
+
++ CSS
+
+See the book ["_R Markdown: The Definitive Guide_"][Yihui Xie, J. J. Allaire, Garrett Grolemund] if you are interested. 
+
+
+# Conclusion
+
+Use it! 
+
+
+
+[Yihui Xie, J. J. Allaire, Garrett Grolemund]: https://bookdown.org/yihui/rmarkdown/
+
+

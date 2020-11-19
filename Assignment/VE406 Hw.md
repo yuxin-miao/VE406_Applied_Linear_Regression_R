@@ -321,7 +321,6 @@ So the equation is unchanged.
    \end{align*}
    $$
    
-
 2. Similar procedure, find that 
    $$
    \begin{align*}
@@ -365,5 +364,5 @@ So the equation is unchanged.
    \end{align*}
    $$
    
-
 4. When the correct model used, the variance is same as calculated in **3**. So the variance of the estimator will not be affected by the incorrect model. 
+

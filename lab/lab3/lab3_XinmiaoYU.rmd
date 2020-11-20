@@ -1,0 +1,382 @@
+---
+title: 
+  "Lab 3"
+author: 
+  "Ve406"
+date: 
+  'Due: __24 November 2020, 18:20am__'
+header-inclues:
+  - \usepackage{amsmath}
+  - \usepackage{amssymb}
+  - \usepackage{amsthm}  
+  - \usepackage{amsthm}  
+  - \usepackage{listings}
+output: 
+  pdf_document:
+  fig_width: 6
+  fig_height: 6
+---
+  
+# Instructions
+  
+* Please report your findings in this __R Markdown__ file by removing any text that you do not need. Include all your __R__-code in `chunks` and your comments and findings as texts.
+
+* Recall __R__-chunks that are not necessary to report (like the package loading and the working directory path) can be exempt from printing by using the option `echo=FALSE` in the setting up of the `chunk`. 
+
+```{r echo=FALSE}
+# Don't forget to insert your working directory here!
+setwd("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/lab/lab3")
+working.directory = getwd()
+chem_pro.csv = paste(working.directory, "/chem_pro.csv", sep = "")
+USA_real_estate.txt = paste(working.directory, "/USA_real_estate.txt", sep = "")
+```
+
+* This lab is about unususal points, heteroskedasticity and correlated errors. 
+
+-----
+
+# Task 1 (8 points)
+
+The data `chem_pro` is the dataset about a particular chemical process we considered in class. 
+
+## (a) (1 point)
+
+Succesfully render this file. 
+
+
+## (b) (1 point)
+
+Clean `chem_pro.df` according to what we have discussed in class.
+
+Data cleaning is discussed as "correcting obvious typos and reporting potential errors". Inconsistent data type indicates typo of $ratio$. Potential error is found through summary and boxplot.
+
+
+
+```{r chemical process data, results = 'hide'}
+chem_pro.df = read.table(file = chem_pro.csv, sep = ",", header = TRUE)
+
+# typo of inconsistent data type and '0>163'
+ratio_typo = which(chem_pro.df$ratio == "0>163")
+chem_pro.df$ratio[ratio_typo] = "0.163"
+chem_pro.df$ratio = as.double(chem_pro.df$ratio)
+
+# identify potential problems 
+summary(chem_pro.df)
+par(mfrow = c(1, 4))
+lapply(chem_pro.df, boxplot)
+par(mfrow = c(1, 1))
+conversion_typo = which(chem_pro.df$conversion <= -10)
+ratio_unusual = which(chem_pro.df$ratio <= 0.05)
+
+# conversion typo
+chem_pro.df$conversion[conversion_typo] = -chem_pro.df$conversion[conversion_typo]
+```
+The conversion should not be negative, which should be a typo. The unusual point of ratio, index is 6, should be reported.
+
+## (c) (1 point)
+
+Produce the pairs plot of all the variables in `chem_pro.df` like the one I showed in class. 
+
+```{r}
+
+## put histograms on the diagonal, from R official pairs doc 
+panel.hist <- function(x, ...)
+{
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(usr[1:2], 0, 1.5) )
+  h <- hist(x, plot = FALSE)
+  breaks <- h$breaks; nB <- length(breaks)
+  y <- h$counts; y <- y/max(y)
+  rect(breaks[-nB], 0, breaks[-1], y, col = "cyan", ...)
+}
+
+## put (absolute) correlations, from R official pairs doc
+## with size proportional to the correlations.
+panel.cor <- function(x, y, digits = 2, prefix = "", cex.cor, ...)
+{
+  usr <- par("usr"); on.exit(par(usr))
+  par(usr = c(0, 1, 0, 1))
+  r <- abs(cor(x, y))
+  txt <- format(c(r, 0.123456789), digits = digits)[1]
+  txt <- paste0(prefix, txt)
+  if(missing(cex.cor)) cex.cor <- 0.8/strwidth(txt)
+  text(0.5, 0.5, txt, cex = cex.cor * r)
+}
+
+pairs(chem_pro.df, upper.panel = panel.smooth, diag.panel = panel.hist, lower.panel = panel.cor)
+```
+
+## (d) (1 point)
+
+Construct the following model, then produce all the usual regression diagnostic plots for `chem_pro.LM`.
+
+```{r chem_pro.lm, results = 'hide'}
+chem_pro.LM = lm(yield~conversion+flow+ratio, data = chem_pro.df)
+```
+
++ Standardised residual Vs fitted value 
+```{r}
+fvs = fitted.values(chem_pro.LM)  # fitted value
+sres = rstandard(chem_pro.LM)  # standardised residuals 
+plot(fvs, sres, xlab = "Fitted Value", ylab = "Standardised Residuals", sub = "lm(yield~conversion + flow + ratio)")
+abline(h = 0, lty = 2, col = "red")
+```
++ Standardised residual Vs conversion 
+```{r}
+plot(chem_pro.df$conversion, sres, xlab = "Conversion", ylab = "Standardised Residuals",  sub = "lm(yield~conversion + flow + ratio)")
+abline(h = 0, lty = 2, col = "red")
+```
+
++ Standardised residual Vs flow
+```{r}
+plot(chem_pro.df$flow, sres, xlab = "Flow", ylab = "Standardised Residuals", sub = "lm(yield~conversion + flow + ratio)")
+abline(h = 0, lty = 2, col = "red")
+```
+
++ Standardised residual Vs ratio 
+```{r}
+plot(chem_pro.df$ratio, sres, xlab = "Ratio", ylab = "Standardised Residuals", sub = "lm(yield~conversion + flow + ratio)")
+abline(h = 0, lty = 2, col = "red")
+```
+
++ Residual Vs Previous Residual 
+```{r}
+res = residuals(chem_pro.LM)
+plot(res[-nrow(chem_pro.df)], res[-1], xlab = "Previous", ylab = "Residuals", main = "Residuals vs. Previous Residual", sub = "lm(yield~conversion + flow + ratio)")
+```
+
++ Residual Autcorrelation (ACF)
+```{r}
+acf(res, main = "Residual Autcorrelation (ACF)")
+```
+
++ Q-Q Normal
+```{r}
+qqnorm(res)
+qqline(res, lty = 2, col = "red")
+```
+
+
+## (e) (1 point)
+
+Compute VIF for `chem_pro.LM` according to the definition, then compare it with the values found in class. 
+```{r}
+VIF <- rep(0, 3)
+names(VIF) <- c("conversion", "flow", "ratio")
+conversion.LM = lm(conversion ~ flow + ratio, data = chem_pro.df) 
+VIF[1] <- 1 / (1 - summary(conversion.LM)$r.squared) 
+flow.LM = lm(flow ~ conversion + ratio, data = chem_pro.df) 
+VIF[2] <- 1 / (1 - summary(flow.LM)$r.squared)
+ratio.LM = lm(ratio ~ conversion + flow, data = chem_pro.df) 
+VIF[3] <- 1 / (1 - summary(ratio.LM)$r.squared)
+VIF
+```
+The VIF computed by definition gives the same result as in class.
+
+## (f) (1 point)
+
+Produce a boxplot of Leverage Scores for `chem_pro.LM` like the one I showed in class. 
+```{r}
+pii.vec = hatvalues(chem_pro.LM)
+boxplot(pii.vec, ylim = c(0.025, 0.275), xlab = "lm(formula = yield~conversion + flow + ratio, data = chem_pro.df)", ylab = "Leverage Scores", main = "Leverage Plot")
+# k = 3
+abline(h = mean(pii.vec), lty = 2, col = "blue")
+abline(h = 3 * (3 + 1) / 44, lty = 2, col = "red")
+legend("bottomright", legend=c("average", "excessive"), col = c("blue", "red"), lty=2)
+```
+
+## (g) (1 point)
+
+Produce the plot of standardised residual Vs leverage score for `chem_pro.LM` like the one I showed in class. 
+```{r}
+plot(pii.vec, sres,  type="n", xlab = "Leverage Score", ylab = "Standardised Residuals", 
+     main = "Residual Vs Leverage", sub = "lm(formula = yield~conversion + flow + ratio, data = chem_pro.df)")
+text(pii.vec, sres, c(1:44))
+abline(h = 0, lty = 2, col = "red")
+```
+
+
+## (h) (1 point)
+
+Produce a table of influence measures for `chem_pro.LM` like the one I showed in class. 
+```{r with knitr}
+im = influence.measures(chem_pro.LM)
+im
+```
+
+
+# Task 2 (6 points)
+
+The data `USA_real_estate` is about the median price of houses sold in different areas of USA in 2006. 
+
+Variable | Description 
+---------|---------
+`mppsf` | Median Price Per Square Foot
+`ns`    | Number Homes from which the Median Price is computed
+`pnh`   | Percentage of Homes sold that are build in 2005 or 2006
+`pms`   | Percentage of Mortgage Foreclosure Sales
+
+Each data point is for one such area of USA in 2006. 
+
+## (a) (1 point) 
+
+Check for the presence of heteroskedasticity in the model `usare.LM`. 
+
+```{r first model, results = 'hide'}
+usare.df = read.table(file = USA_real_estate.txt, sep = "", header = TRUE)
+usare.LM = lm(mppsf~pnh+pms, data = usare.df)
+```
+
+```{r}
+fvs2 = fitted.values(usare.LM)
+sres2 = rstandard(usare.LM)
+plot(fvs2, sres2, xlab = "Fitted Value", ylab = "Standardised Residuals", sub = "lm(mppsf~pnh+pms)")
+abline(h = 0, lty = 2, col = "red")
+```
+From the above plot, we could see the variance of the residuals is not constant, heteroskedasticity presents in the model.
+
+## (b) (1 point)
+
+Estimate the weights for using weighted least squares for the following linear model
+  \[
+    \text{mppsf}_i = \beta_0 + \beta_1 \text{pnh}_i + \beta_2 \text{pms}_i  + \sigma_i \varepsilon
+  \]
+```{r}
+z = 2 * log(abs(usare.LM$residuals)) #  z is the auxiliary response,
+auxiliary.LM = lm(z~pnh + pms, data = usare.df)  # Perform the auxiliary regression
+v.vec = exp(auxiliary.LM$fitted.values) # transform back 
+w.vec = 1/v.vec
+```
+
+## (c) (1 point)
+
+Construct the linear model using weighted least squares with your estimated weights, name it `usare.WLS`. 
+
+  \[
+    \text{mppsf}_i = \beta_0 + \beta_1 \text{pnh}_i + \beta_2 \text{pms}_i  + \sigma_i \varepsilon
+  \]
+  
+```{r}
+usare.WLS = lm(mppsf~pnh+pms, weights = w.vec, data = usare.df) 
+```
+  
+
+
+## (d) (1 point)
+
+Explain why `ns` might also be an appropriate estimate for the weights. 
+
+
+## (e) (1 point)
+
+Construct the linear model using weighted least squares with the weights based on `ns`, name it `usare.ns.WLS`.   
+  \[
+    \text{mppsf}_i = \beta_0 + \beta_1 \text{pnh}_i + \beta_2 \text{pms}_i  + \sigma_i \varepsilon
+  \]
+```{r}
+usare.ns.WLS = lm(mppsf~pnh+pms, weights = ns, data=usare.df) 
+summary(usare.ns.WLS)
+```
+
+
+
+## (f) (1 point)
+
+Compare `usare.WLS` with `usare.ns.WLS`. Which of the two models do you prefer? Explain your answer. 
+
+# Task 3 (5 points)
+
+The data `grossboxoffice` is about yearly gross box office receipts from moives screened in Australia. 
+
+## (a) (1 point)
+
+Load the data file `grossboxoffice.txt` into R, and construct the following model, name it as `gbo.LM`. 
+  \[
+    \text{GrossBoxOffice}_i = \beta_0 + \beta_1 \text{year}_i  + \varepsilon
+  \]
+
+Comment on the validity of `gbo.LM`.  
+```{r}
+gbo.df = read.table(file = "grossboxoffice.txt", sep="", header = TRUE) 
+gbo.LM = lm(GrossBoxOffice ~ year, data = gbo.df)
+summary(gbo.LM)
+```
+
+
+## (b) (1 point)
+
+Explore the possibility of using AR(1), AR(2), and AR(3). 
+
+- Check the posibility of using AR(1)
+```{r}
+res3 = residuals(gbo.LM)
+res.lag.df = data.frame(x = res3[-length(res3)], y = res3[-1])
+auxiliary.LM3 = lm(y~x, data = res.lag.df)
+summary(auxiliary.LM3)
+```
+Because of the extremely small p-value, there is no evidence against that the auxiliary model is valid.
+```{r}
+ar_res_plot = function(lag = 1) {
+  index = 0:(lag - 1) - nrow(gbo.df)
+  x = gbo.df$year[index]
+  y = rstandard(gbo.LM)[-(1:lag)]
+  plot(x, y, xlab = bquote("year lag"~.(lag)), ylab = "Standardised Residual",
+       main = "Residual Plot", sub = deparse(gbo.LM$call))
+  abline(a = 0, b = 0, lty = 2, col = "red") 
+  abline(lm(y~x), lty = 2, col = "blue") 
+  legend("bottomright", "Regression Fit", lty = 2, col = 4)
+}
+ar_res_plot(1)
+```
+From the plot, we see that the residual do not show a random scatter, but it is highly likely that $\varepsilon_i$ is not only depend on $X_{i-1}$. We might need to consider a polynomial formula. 
+
+- Check the posibility of using AR(2)
+```{r}
+res.lag2.df = data.frame(x = res3[-(32:31)], y = res3[-(1:2)]) 
+auxiliary2.LM = lm(y~x, data = res.lag2.df) 
+summary(auxiliary2.LM)
+```
+Because of the extremely small p-value, there is no evidence against that the auxiliary model is valid.
+
+- Check the posibility of using AR(2)
+```{r}
+res.lag3.df = data.frame(x = res3[-(32:30)], y = res3[-(1:3)]) 
+auxiliary3.LM = lm(y~x, data = res.lag3.df) 
+summary(auxiliary3.LM)
+```
+Because of the extremely small p-value, there is no evidence against that the auxiliary model is valid. However, the adjusted R-squared are decreaseing for these three models.
+
+## (c) (1 point)
+
+Obtain a final model for predicting `GrossBoxOffice` for `year=1975`, name it as `gbo.final.M`.
+
+As our goal is to predict, although observing a decreased adjusted R squared, the t-statistic make it reasonable to push to AR(3) model.
+
+```{r}
+lag = 3
+index = 0:(lag - 1) - nrow(gbo.df)
+GrossBoxOffice = gbo.df$GrossBoxOffice[-(1:lag)]
+year = gbo.df$year[-(1:lag)]
+df.lag = gbo.df$GrossBoxOffice[index]
+gbo_lag.df = data.frame(GrossBoxOffice, year, df.lag)
+gbo.final.M = lm(GrossBoxOffice ~ year + poly(df.lag, 2), data = gbo_lag.df)
+summary(gbo.final.M)
+```
+```{r}
+predict(gbo.final.M, data.frame(year = 1975, year.lag = gbo_lag.df$GrossBoxOffice[1]))
+```
+
+## (d) (1 point)
+
+Produce diagnostic plots to justify your choice of model. 
+
+## (e) (1 point)
+
+Describe any weakness in your `gbo.final.M`. 
+
+## (f) (1 point)
+
+Use your model `gbo.final.M` to identify any outliers. 
+
+
+

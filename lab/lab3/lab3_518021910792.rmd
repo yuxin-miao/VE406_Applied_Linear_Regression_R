@@ -18,10 +18,6 @@ output:
 ---
   
 # Instructions
-  
-* Please report your findings in this __R Markdown__ file by removing any text that you do not need. Include all your __R__-code in `chunks` and your comments and findings as texts.
-
-* Recall __R__-chunks that are not necessary to report (like the package loading and the working directory path) can be exempt from printing by using the option `echo=FALSE` in the setting up of the `chunk`. 
 
 ```{r echo=FALSE}
 # Don't forget to insert your working directory here!
@@ -57,11 +53,16 @@ chem_pro.df = read.table(file = chem_pro.csv, sep = ",", header = TRUE)
 
 # typo of inconsistent data type and '0>163'
 ratio_typo = which(chem_pro.df$ratio == "0>163")
+
+
+```
+
+```{r results='hide'}
 chem_pro.df$ratio[ratio_typo] = "0.163"
 chem_pro.df$ratio = as.double(chem_pro.df$ratio)
 
 # identify potential problems 
-summary(chem_pro.df)
+# summary(chem_pro.df)
 par(mfrow = c(1, 4))
 lapply(chem_pro.df, boxplot)
 par(mfrow = c(1, 1))
@@ -71,6 +72,7 @@ ratio_unusual = which(chem_pro.df$ratio <= 0.05)
 # conversion typo
 chem_pro.df$conversion[conversion_typo] = -chem_pro.df$conversion[conversion_typo]
 ```
+
 The conversion should not be negative, which should be a typo. The unusual point of ratio, index is 6, should be reported.
 
 ## (c) (1 point)
@@ -338,7 +340,7 @@ summary(auxiliary2.LM)
 ```
 Because of the extremely small p-value, there is no evidence against that the auxiliary model is valid.
 
-- Check the posibility of using AR(2)
+- Check the posibility of using AR(3)
 ```{r}
 res.lag3.df = data.frame(x = res3[-(32:30)], y = res3[-(1:3)]) 
 auxiliary3.LM = lm(y~x, data = res.lag3.df) 
@@ -362,21 +364,69 @@ gbo_lag.df = data.frame(GrossBoxOffice, year, df.lag)
 gbo.final.M = lm(GrossBoxOffice ~ year + poly(df.lag, 2), data = gbo_lag.df)
 summary(gbo.final.M)
 ```
-```{r}
-predict(gbo.final.M, data.frame(year = 1975, year.lag = gbo_lag.df$GrossBoxOffice[1]))
-```
 
 ## (d) (1 point)
 
 Produce diagnostic plots to justify your choice of model. 
 
+- Residual Plot 
+
+```{r}
+fvs3d = fitted.values(gbo.final.M)
+sres3d = rstandard(gbo.final.M) 
+plot(fvs3d, sres3d, xlab = "Fitted Values", ylab = "Standardized Residuals", main = "Residual Plot")
+abline(h = 0, lty = 2, col = "red") 
+```
+There is no evidence for non-constant variance. The residuals seem like have a bit underlying pattern, but considering the small sample size and the pattern is not so obvious, we may continue and check other assumptions. 
+
+
+- ACF Plot 
+```{r}
+acf(gbo.final.M$residuals, main="Residual Autocorrelation")
+```
+There is no evidence that the residuals for our final model is correlated. 
+
+- Residual vs Previous Residual 
+
+```{r}
+plot(gbo.final.M$residuals[-length(gbo.final.M$residuals)], gbo.final.M$residuals[-1], xlab="Previous", ylab="Residuals", main="Residual vs. Previous Residual")
+```
+The plot doesn't show obvious pattern, the residuals basically randomly scatter around mean=0. So no evidence show the model is inappropriate. 
+
+- Nomarlity 
+
+```{r}
+ qqnorm(gbo.final.M$residuals) 
+qqline(gbo.final.M$residuals, lty=2, col="red")
+```
+```{r}
+shapiro.test(gbo.final.M$residuals)
+```
+
+We check the Q-Q plot and there is no violation of our assumption. Due to the small sample size, we check the Shapiro-Wilk normality test as well. There is no evidence against the normality.
+
+- Overall, the model choice is reasonable.
+
 ## (e) (1 point)
 
 Describe any weakness in your `gbo.final.M`. 
 
+With the small data size, the evidence is not so strong. 
 ## (f) (1 point)
 
 Use your model `gbo.final.M` to identify any outliers. 
 
+```{r}
+boxplot(gbo.final.M$residuals)
+```
 
+```{r}
+plot(gbo.final.M$residuals, type="n",
+ylab = "Residuals")
+text(gbo.final.M$residuals); 
+abline(h=0,lty=3, col="red") 
+```
+```{r}
+which(gbo.final.M$residuals< -100)
+```
 

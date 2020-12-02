@@ -921,8 +921,8 @@ start = initial, data = puromycin.df,
 trace = TRUE) }) # with capture.output, we could get RSS and parameter in each iteration
 
 model = puromycin.NL
-model
-
+model$m$deviance()
+RSS(model)
 ```
 ```{r}
 parameter_each # with capture.output, we could get RSS and parameter in each iteration

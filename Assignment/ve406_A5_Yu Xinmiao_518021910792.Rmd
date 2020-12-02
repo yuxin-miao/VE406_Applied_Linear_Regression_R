@@ -1,0 +1,130 @@
+---
+title: "VE406 Homework5"
+author: "Yu Xinmiao 518021910792"
+date: "11/24/2020"
+header-inclues:
+  - \usepackage{amsmath}
+  - \usepackage{amssymb}
+  - \usepackage{amsthm}  
+  - \usepackage{amsthm}  
+  - \usepackage{listings}
+output: 
+  pdf_document:
+  fig_width: 6
+  fig_height: 6
+---
+
+```{r echo=FALSE}
+# Don't forget to insert your working directory here!
+rm(list = ls())
+setwd("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/Assignment")
+working.directory = getwd()
+semi.txt = paste(working.directory, "/semi.txt", sep = "")
+newcar.csv = paste(working.directory, "/newcar.csv", sep = "")
+```
+
+# Q1
+## (a)
+After load in the semi.df, we observe the `str(semi.df)` do not have large data values, so randomly choose three small coefficient as the initial starting point for nls. 
+```{r}
+semi.df = read.table(file = semi.txt, header = TRUE)
+# str(semi.df)
+parameter_each = capture.output({
+  semi.NL = nls(
+    Reactivity~b1*(1-exp(-exp(b2+b3*Thickness))), 
+    start = list(b1=1, b2=1, b3=2), data = semi.df, trace = TRUE
+    )
+})
+
+parameter_each
+```
+From the output, we found the coefficients approaches around $b_1=2,b_2=1,b_3=-14$. So with these three initial values, we fit the model again.
+
+
+```{r}
+semi.NL = nls(
+  Reactivity~b1*(1-exp(-exp(b2+b3*Thickness))), 
+  start = list(b1=2, b2=1, b3=-14), data = semi.df)
+summary(semi.NL)
+```
+And the maximum estimates of the parameters $\beta_1,\beta_2,\beta_3$ are shown in the summary.
+
+## (b)
+```{r}
+fvs = fitted.values(semi.NL)
+obs = semi.df$Reactivity
+plot(semi.df$Thickness, fvs, type="b", col="blue", lty=1, xlab="Thinkness", ylab="Reactivity", main="MLE Estimated vs. Observed") 
+points(semi.df$Thickness, obs, col="red", lty=2)
+legend("topright", lty = 1:2, col = c("blue", "red"), legend = c("estimated", "observed"))
+```
+## (c)
+
+The estimated $\hat{\sigma}^2$ is 
+
+$$\frac{1}{n-3}\sum_{i=1}^n (y_i-\hat{y_i})^2,$$
+with the data introduced before, calculated that 
+
+```{r}
+sum((obs - fvs) * (obs - fvs)) / (length(obs) - 3)
+```
+So $\hat{\sigma}^2 = 0.0105$.
+
+## (d)
+When $\beta_1,\beta_3$ are known to be positive, as the trend of $e^{\beta_2 + \beta_3x_i}$ will not be influenced by $\beta_2$, the whole equation will decrease while $x$ is increasing. So the upper bound is 
+$$\beta_1(1-exp(-e^{-\beta_2}))$$
+Estimate through the previous estimate, which gives result as 0.4771.
+```{r}
+1.9484*(1-exp(-exp(-1.2699)))
+```
+
+
+# Q2
+## (a)
+```{r}
+newcar.df = read.table(file = newcar.csv, header = TRUE, sep = ",")
+newcar.LG = glm(NEWCAR ~ INCOME + CAR.AGE, family = binomial, data = newcar.df)
+summary(newcar.LG)
+```
+
+The result of Wald Test is shown in the summary. Base on the p-value of testing the null hypothesis
+$H_0:$ the coefficients  of `CAR.AGE` is zero, which is $0.1249>0.05$, there is no evidence to reject the hypothesis. So we can conclude that `CAR.AGE` could be dropped from the model. 
+
+## (b)
+```{r}
+newcar.noCarAge.LG = glm(NEWCAR ~ INCOME, family = binomial, data = newcar.df)
+LR.test = 2 * (logLik(newcar.LG)[1]-logLik(newcar.noCarAge.LG)[1]) 
+1-pchisq(LR.test, 1)
+```
+The likelihood ratio test with null hypothesis $H_0:$ the reduced model is valid, such that the coefficients of `CAR.AGE` forced to zero is indeed zero. The p-value is $0.106$, which is not small enough. There is no evidence to reject the hypothesis. So `CAR.AGE` is not needed.
+## (c)
+
+```{r}
+predf = data.frame(INCOME = 50, CAR.AGE = 3)
+mhat = predict(newcar.LG, newdata = predf, type = "response") 
+mhat
+```
+which gives the estimated probability is $0.609$.
+
+# Q3
+## (a)
+```{r}
+leukemia.df = data.frame(
+  County = c("Marin", "Contra Costa", "Alameda", "San Francisco", "San Mateo" ),
+  Count = c(22,146,226,47,52), 
+  Population = c(247289,948816,1443741,776733,70716)
+  )
+leukemia.PS = glm(Count ~ Population, family = poisson, data = leukemia.df)
+summary(leukemia.PS)
+```
+So the maximum likelihood estimate of $\theta$ is $1.457e-6$
+## (b)
+```{r}
+leukemia.county = glm(Count ~ Population + County, family = poisson, data = leukemia.df)
+1-pchisq( leukemia.PS$deviance - leukemia.county$deviance , 1)
+```
+As the large sample inference is valid, as the sample size becomes large, the difference in the deviances follows a chi-squared distribution, with the null hypothesis that the simpler model is correctly specified. 
+
+The number of degree of freedom is the difference in the number of paramters of the two model, which is $1$. 
+
+
+The p-value is $3.039791e-13$, so we need to introduce the categorical variable `County` into the model. 

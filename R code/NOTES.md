@@ -468,7 +468,11 @@ with mean depends on the regressors / predictors
 
 
 
+## GEE
 
+quasi-likelihood estimate, parameter estimate is valid even when the covariance matrix is mis-specified. 
+
+https://online.stat.psu.edu/stat504/node/180/
 
 # Summary
 

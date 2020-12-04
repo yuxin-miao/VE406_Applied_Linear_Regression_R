@@ -345,7 +345,6 @@ lines(x.hist, pnorm(x.hist), col = 2, lty = 2)
 legend("topleft", lty = c(1, 2), col = c(1, 2), 
        legend = c("Estimation", "True CDF"))
 
-
 ```
 
 
@@ -1302,14 +1301,27 @@ rowMeans(mse.sim) # choose based on the estimated MSE of this bootstrap simulati
 
 ```
 
+# L18 GLM
+The GLM is a model with model structure 
 
 
-#  GEE
+# L19 GEE
 ```{r}
 # It is clear that the measurement taken on the same device may be correlated.
 semiconductor.df = read.table("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/semiconductor.txt", colClasses = c(rep("factor", 7), "numeric"), header = TRUE)
 str(semiconductor.df, vec.len = 3)
 
 # Cluster: fixed group 
+
+
+library(gee)
+semi.GEE = gee(Camber~.-Run, family = Gamma(link = "log"), id = Run, corstr = "AR-M", M = 1, data = semiconductor.df)
+semi.GEE # the model does not give strong correlation, check glm
+
+semi.GLM = glm(Camber~.-Run, family = Gamma(link = "log"), data = semiconductor.df)
+summary(semi.GLM)
+
 ```
+## Nonparametric 
+### simple smoothing 
 

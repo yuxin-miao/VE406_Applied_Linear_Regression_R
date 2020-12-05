@@ -474,6 +474,65 @@ quasi-likelihood estimate, parameter estimate is valid even when the covariance 
 
 https://online.stat.psu.edu/stat504/node/180/
 
+
+
+## Non-parametric
+
+The fitted values under a lineat smoother is simply gievn by 
+$$
+\hat{y_i}=\hat{m}(x_i) \Rightarrow \mathbf{\hat{y}=Sy}
+$$
+where matrix $\mathbf{S}$ is known as smoothing matrix
+
+### Simple Smoothing
+
+1.  binning / bin-smoothing: will have discontinuous at the boundary
+   - have a fixed-width bins with varying number of observations 
+2. simple moving average (SMA), often used in time-seires 
+   - $(n-L)$ bins, each has fixed number of observations 
+   - results a shift in $x$ for a large $L$ due to only using “past” data
+3. simple central moving averages (SCMA)
+   - $(n-2L)$ bins 
+   - avoids the shift in $x$ by using data on both sides 
+4. running mean smoothing (RMS) 
+5. running line smoothing (RLS)
+
+the simple smoothers are not smooth, one way to address is to use a **linear spline** rather than a least squares line. Specifically, some called cubic spline. 
+
+### Kernel Smoothing / Regression 
+
+a kernel is a non-negative integrable function $K(z)$ such that 
+$$
+K(z)=K(-z),\ \int_{-\infty}^{\infty}K(z)dz=1,\ \mathop{lim}_{z\rightarrow -\infty}K(z)= \mathop{lim}_{z\rightarrow \infty}K(z)=0
+$$
+common kernel functions: Rectangular / Triangular / Parabolic / Gaussian 
+
+- bandwidth $h$ $\hat{m}_h(x)$
+
+
+
+### Penalised Regression 
+
+- natural cubic interpolating spline (NCIS)
+
+
+
+## Spline Interpolating 
+
+样条插值，给出a set of data points, 要求连续且一阶导连续（曲线光滑），二阶导连续（曲线曲率最小），且二阶导在boundary point为0
+
+## Generalised Additive Model 
+
+Non-identifiable model
+
+additive model 
+
+
+
+## Points 
+
+not nested model, can;t use deviance based test, likelihood test, to select model
+
 # Summary
 
 <img src="/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/image-20201118134859405.png" alt="image-20201118134859405" style="zoom:50%;" />

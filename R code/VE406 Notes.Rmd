@@ -487,7 +487,7 @@ library(MASS)
 
 
 ```{r}
-oc.df = read.table("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/old_car.txt")
+oc.df = read.table("./in-class demo/Data/old_car.txt")
 oc.LM = lm(price~age, data = oc.df)
 ```
 # L06 Prediction 
@@ -537,7 +537,7 @@ three variables: $y$ as gain; $X$ as driven-in time and dose
 ```{r}
 # install.packages("xlsx")
 library(xlsx)
-trans.df = read.xlsx("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/transistor.xlsx", sheetIndex = 1)
+trans.df = read.xlsx("./in-class demo/Data/transistor.xlsx", sheetIndex = 1)
 ## full model first, take all the regression variables first.
 trans.LM = lm(gain~., data = trans.df) # use gain as response, '.' means all other variables are x
 
@@ -594,7 +594,7 @@ shapiro.test(res.dit)
 Example1: only drop variables after check residual plots (all the assumptions are satisfied)
 
 ```{r}
-sim.df = read.csv("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/sim_poly_class.csv.bz2")
+sim.df = read.csv("./in-class demo/Data/sim_poly_class.csv.bz2")
 str(sim.df)
 sim.LM = lm(y~x1+x2+x3, data = sim.df)
 plot(sim.LM, which=1)
@@ -665,7 +665,7 @@ replicate(20, {y.vec=rnorm(10, mean=x.vec, sd=3)     abline(lm(y.vec~x.vec-1))})
 Case Study
 shows how to address multicollinearity and unusual points (data cleaning) 
 ```{r}
-chem_pro.df = read.table("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/chem_pro.csv", sep = ",", header = TRUE)
+chem_pro.df = read.table("./in-class demo/Data/chem_pro.csv", sep = ",", header = TRUE)
 # check 
 str(chem_pro.df) # different data type, might be a typo for ratio's type
 
@@ -763,7 +763,7 @@ cubic.LM = lm(yield~ conversion + poly(flow,3) + + I(1/ratio), data = chem_pro.d
 # L12
 Heteroskedasticity
 ```{r}
-cleaning.df = read.table("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/cleaning.txt", header = TRUE)
+cleaning.df = read.table("./in-class demo/Data/cleaning.txt", header = TRUE)
 summary(cleaning.df)
 cleaning.LM = lm(Rooms~Crews, data = cleaning.df)
 crews.group = factor(cleaning.df$Crews)
@@ -786,7 +786,7 @@ $z_i=ln(\hat{e_i}^2)=2ln|\hat{e_i}|$, the log-scale provides extra numerical sta
 
 
 ```{r}
-cvrv.df = read.table("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/cvrv.csv", sep = ",", header = TRUE)
+cvrv.df = read.table("./in-class demo/Data/cvrv.csv", sep = ",", header = TRUE)
 cvrv.LM = lm(capital~rental, data = cvrv.df)
 cvrv.res = residuals(cvrv.LM)
 plot(fitted.values(cvrv.LM), cvrv.res) # the variance is clearly unequal, and rental varies continuously., not in the same scale
@@ -821,7 +821,7 @@ sales.LM = lm(sales~advertising, data = sales.df)
 
 
 ```{r}
-evap.df = read.table("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/evap.txt", header = TRUE)
+evap.df = read.table("./in-class demo/Data/evap.txt", header = TRUE)
 # install.packages("leaps")
 
 # try to exhaust all the combinations, use RSS to determine. only look at which term is significant or not: for explain but not prediction 
@@ -870,7 +870,7 @@ MLE and LSE still identical. in order to solve MLE, has the score equation.
 ```{r}
 plot.new
 quartz()
-puromycin.df = read.table("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/puromycin.txt", header = TRUE)
+puromycin.df = read.table("./in-class demo/Data/puromycin.txt", header = TRUE)
 str(puromycin.df)
 
 # know the expectation: E[Velocity|Concentration] = (\beta_1 Concentration) / (\beta_2 + Concentration), with unknown parameter \beta_1 and \beta_2
@@ -1033,7 +1033,7 @@ Until now, we assumed that the errors following a normal distribution
 # L16 Logistic regression 
 Mathematical equation / induction, see $Notes.md$
 ```{r}
-credit.df = read.table("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/credit.csv", header = TRUE, sep = ",")
+credit.df = read.table("./in-class demo/Data/credit.csv", header = TRUE, sep = ",")
 str(credit.df)
 # visualize the data
 # Scatter plot
@@ -1104,7 +1104,7 @@ However, no way to check the validity of the model, and appropriateness of using
 Group: means there are groups of data points that have the same $\mathbf{X}$
 ```{r}
 # group logistic regression 
-ingots.df = credit.df = read.table("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/ingots.csv", header = TRUE, sep = ",")
+ingots.df = credit.df = read.table("./in-class demo/Data/ingots.csv", header = TRUE, sep = ",")
 ingots.df # 20 binomial distributions 
 ingots.LG = glm(notready/total~heat+soak, family = binomial, data = ingots.df, weights = total)
 summary(ingots.LG)
@@ -1182,7 +1182,7 @@ sim.final.LG = glm(y/total~x1+x2+x3, family=binomial, weights = total, data=sim.
 # L17 Poisson
 
 ```{r}
-bomber.df = read.table("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/aircraft.csv", header = TRUE, sep = ",")
+bomber.df = read.table("./in-class demo/Data/aircraft.csv", header = TRUE, sep = ",")
 str(bomber.df)
 # the MLE of beta 
 bomber.PS = glm(Damage ~ Type + Month + Load, family=poisson, data=bomber.df)
@@ -1308,7 +1308,7 @@ The GLM is a model with model structure
 # L19 GEE
 ```{r}
 # It is clear that the measurement taken on the same device may be correlated.
-semiconductor.df = read.table("/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/in-class demo/Data/semiconductor.txt", colClasses = c(rep("factor", 7), "numeric"), header = TRUE)
+semiconductor.df = read.table("./in-class demo/Data/semiconductor.txt", colClasses = c(rep("factor", 7), "numeric"), header = TRUE)
 str(semiconductor.df, vec.len = 3)
 
 # Cluster: fixed group 
@@ -1324,4 +1324,169 @@ summary(semi.GLM)
 ```
 ## Nonparametric 
 ### simple smoothing 
+
+```{r}
+rm(list=ls())
+# Cosmic Microwave Background Radiation 
+cmb.df = read.table("./in-class demo/Data/cmb.csv", sep=',', header = TRUE)
+library(splines)
+n.samp = 10
+index = sample(nrow(cmb.df), n.samp) # 随机选取十个
+cmb_train = cmb.df[index, ]
+cmb_train = cmb_train[order(cmb_train$freq), ]
+ispl = interpSpline(cmb_train$freq, cmb_train$power)
+pred.x = seq(min(cmb_train$freq), max(cmb_train$freq), length.out = 200) 
+pred.vec = predict(ispl, pred.x)
+plot(cmb.df$power)
+plot(pred.vec)
+```
+
+### Kernel Smoothing 
+```{r}
+kreg = ksmooth(cmb.df$freq, cmb.df$power, kernel = 'normal', bandwidth = 44)
+library(KernSmooth)
+lreg = locpoly(cmb.df$freq,cmb.df$power,degree=1, bandwidth=dpill(cmb.df$freq, cmb.df$power)) # Estimates a probability density function, regression function or their derivatives using local polynomials.
+plot(power~freq, data = cmb.df, xlim=c(0,100), ylim = c(0, 3000), col = "deepskyblue", main ="Cosmic Microwave Backgroud Radiation", sub = "Boundary bias of kernel regression")
+lines(kreg, col=2, lwd = 1.5, lty = 2) 
+lines(lreg, col= 1, lwd = 2, lty = 3)
+legend("bottomright",c("Kernel Regresion (p = 0)", "Local Polynomial Regression (p = 1)"), col = c(2,1), lwd = c(1.5, 2), lty = 2:3)
+```
+```{r}
+n = 200
+x = seq(0, 1, length = n)
+m = sqrt(x*(1-x)) * sin(2.1*pi/(x+0.05))
+y = m + 0.15 * rnorm(n)
+plot(x, sqrt(x*(1-x)) * sin(2.1*pi/(x+0.05)))
+# 这里的图怎么画的？？
+```
+## Generalised Additive Model 
+Additive models that use splines 
+```{r}
+library(carData) # The dataset is a part of it 
+attach(Prestige) # Variables become global
+sapply(list(prestige, income, education), summary)
+pre.LM = lm(prestige~income+education)
+summary(pre.LM)
+plot(pre.LM, which = 1) # non-linearity issue 
+plot(pre.LM, which = 2) # the normality seems to be ok 
+plot(pre.LM, which = 3) 
+plot(pre.LM, which = 4) 
+plot(pre.LM, which = 5) 
+plot(pre.LM, which = 6) 
+acf(pre.LM$residuals) # the errors might lack independence 
+
+# try the linearity 
+# bs: B-Spline Basis for polynomial Splines 
+pre.spline.LM = lm(prestige~bs(income, knots = c(9000))+bs(education, knots = c(9, 12)))
+# the choices of knots are made largely based on residual plots and the knowledge regarding education system
+# add one knot for income and two knots for education
+plot(pre.spline.LM, which = 1)  # seems to fix the non-linearity problem 
+
+plot(pre.spline.LM, which = 2) 
+res = pre.spline.LM$residuals 
+acf(res)
+```
+Using smoothing splines and a linear function 
+```{r}
+# install.packages("ISLR")
+library(ISLR) # The Wage dataset is a part of it 
+attach(Wage) # Variables in Wage become global
+wage.LM = lm(wage~age+year+education) 
+summary(wage.LM)
+plot(wage.LM, which = 1) # ugly ! 
+plot(wage) + abline(h=250, col="red", lty=2) # treat the high wages as outliers 
+
+# splitting the data and investigate them indiviadaully 
+# to compare the difference between portions of the dataset 
+wage.l250.df = subset(Wage, wage<250, select = c(wage, age, year, education)) # less than 250 
+attributes(wage.l250.df)$row.names = 1:nrow(wage.l250.df)
+wage.g250.df = subset(Wage, wage>250, select = c(wage, age, year, education)) # greater than 250
+attributes(wage.g250.df)$row.names = 1:nrow(wage.g250.df)
+
+## the first portion 
+wage.l250.LM = lm(wage~age+year+education, data=wage.l250.df)
+# good model assumptions 
+plot(wage.l250.LM, which = 1)
+shapiro.test(wage.l250.LM$residuals)
+plot(wage.l250.LM, which = 2)
+
+## the second portion
+wage.g250.LM = lm(wage~age+year+education, data=wage.g250.df)
+plot(wage.g250.LM, which = 1)
+plot(wage.g250.df$age, wage.g250.LM$residuals)  + abline(h=0, col="red", lty=2)
+
+plot( wage.g250.df$year, wage.g250.LM$residuals) # not good ! 
+
+```
+
+```{r}
+library(ISLR);
+wage.df = Wage[, c("year", "age", "education", "wage")]
+str(wage.df)
+
+# smoothing spline 
+# install.packages("gam")
+library(gam)
+wage.inv.GAM = gam(wage~s(age)+s(year)+education, family = Gamma(link = "inverse"), data = wage.df)
+wage.log.GAM = gam(wage~s(age)+s(year)+education, family = Gamma(link = "log"), data = wage.df)
+
+# inverse link residual 
+res.inv.df = data.frame(cond_m = fitted(wage.inv.GAM), pear_r = residuals(wage.inv.GAM, type = "pearson")) 
+with(res.inv.df, plot( cond_m, pear_r, main = "Residual Plot", cex.lab = 1.5, cex.main = 2)) + with(res.inv.df, lines(smooth.spline( cond_m, pear_r), col = "red", lty = 2, lwd = 2)) + mtext("wage.inv.GAM")
+
+# log link residual 
+res.log.df = data.frame(cond_m = fitted(wage.log.GAM), pear_r = residuals(wage.log.GAM, type = "pearson")) 
+with(res.log.df, plot( cond_m, pear_r, main = "Residual Plot", cex.lab = 1.5, cex.main = 2)) + with(res.log.df, lines(smooth.spline( cond_m, pear_r), col = "red", lty = 2, lwd = 2)) + mtext("wage.log.GAM")
+
+## two plots are similar, expects similar results from both
+
+# use scaled deviance to check goodness of fit 
+# not nested model, can;t use deviance based test, likelihood test, to select model
+summary(wage.inv.GAM)
+1 - pchisq(248.1586/0.0872, 2987)
+summary(wage.log.GAM)
+1- pchisq(248.9206/0.0876, 2987)
+
+wage.normal.GAM = wage.LM # wrong normal.GAM 
+AIC(wage.normal.GAM, wage.inv.GAM, wage.log.GAM) # inverse better 
+
+# use cross-validation 
+k = 100 # number of subsamples  
+n = nrow(wage.df)
+n.test = n/k
+row.index = sample(1:n, n)
+pred.nor = matrix(0, nrow = n.test, ncol = k) 
+pred.inv = matrix(0, nrow = n.test, ncol = k) 
+pred.log = matrix(0, nrow = n.test, ncol = k)
+
+# inverse 
+for (i in 1:k){
+  start = (i-1)*n.test+1; end = i*n.test
+  index = row.index[start:end]
+  wage.inv.GAM = gam(wage~s(age)+s(year)+education, data = wage.df[-index,]) 
+  pred.inv[, i] = predict(wage.inv.GAM, wage.df[index,], type = "response")
+}
+
+for (i in 1:k){
+  start = (i-1)*n.test+1; end = i*n.test
+  index = row.index[start:end]
+  wage.log.GAM = gam(wage~s(age)+s(year)+education, family = Gamma(link = "log"), data = wage.df[-index,]) 
+  pred.log[, i] = predict(wage.log.GAM, wage.df[index,], type = "response")
+}
+tmp = pred.nor[1:n] - wage.df[row.index, "wage"] 
+mse.nor = mean((tmp)^2)
+tmp = pred.inv[1:n] - wage.df[row.index, "wage"] 
+mse.inv = mean((tmp)^2)
+tmp = pred.log[1:n] - wage.df[row.index, "wage"] 
+mse.log = mean((tmp)^2)
+c(mse.nor, mse.inv, mse.log)
+```
+
+```{r}
+# logistic regression under GAM to see whether collectively age, year, education could explain the apparent separation in wage 
+wage.LG.GAM = gam(I(wage > 250)~s(age)+s(year)+education, data = Wage, family = binomial)
+1 - pchisq(wage.LG.GAM$deviance, wage.LG.GAM$df.residual) # no indication of lack of fit 
+
+# so! might need mixture model ! 
+```
 

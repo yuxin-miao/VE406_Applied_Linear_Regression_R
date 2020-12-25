@@ -233,7 +233,7 @@ $$
    $$
    So we find the probability by 
 
-   <img src="/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/Assignment/image-20201028204130318.png" alt="image-20201028204130318" style="zoom:50%;" />
+   <img src="./image-20201028204130318.png" alt="image-20201028204130318" style="zoom:50%;" />
 
    then the probability is $4.90153 \times 10^{-7}$.
 

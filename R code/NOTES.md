@@ -66,9 +66,9 @@ Based on l08
 
 - **leverage point**: points with extreme $x_{ij}-values$ relative to others, (may not have large residuals)， 所以不一定为outlier，看的是横向的是否x与其他的点偏离
 
-  <img src="/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/image-20201026101841265.png" alt="image-20201026101841265" style="zoom:50%;" />
+  <img src="./image/image-20201026101841265.png" alt="image-20201026101841265" style="zoom:50%;" />
 
-  <img src="/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/image-20201026102453480.png" alt="image-20201026102453480" style="zoom:50%;" />
+  <img src="./image/image-20201026102453480.png" alt="image-20201026102453480" style="zoom:50%;" />
 
   但这并不一定不好，如果该数据样本与得到的预测模型相符合时，（利比亚对其周边国家）这个样本即可进行核实和加强。但差别较大（利比亚与发达国家）时，会使其偏离真实模型。
 
@@ -80,9 +80,9 @@ Based on l08
 
     1. Standardized difference in coefficients 
 
-       <img src="/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/image-20201026102835300.png" alt="image-20201026102835300" style="zoom:50%;" />
+       <img src="./image/image-20201026102835300.png" alt="image-20201026102835300" style="zoom:50%;" />
 
-    2. <img src="/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/image-20201026102902271.png" alt="image-20201026102902271" style="zoom:50%;" />
+    2. <img src="./image/image-20201026102902271.png" alt="image-20201026102902271" style="zoom:50%;" />
 
     3. Cook’s distance: based on the idea of *confidence ellipsoid* 
 
@@ -118,7 +118,7 @@ from the $Var[\hat{\beta_1}]$, it has two parts, and the accuracy of our model i
    - spread out $x_i$ -> *well supported regression line*, little change under resampling.
    - bunched up $x_i$ -> *unstable regression line*, like a seesaw 
 
-<img src="/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/image-20201026093940046.png" alt="image-20201026093940046" style="zoom:50%;" />
+<img src="./image/image-20201026093940046.png" alt="image-20201026093940046" style="zoom:50%;" />
 
 2. two predictor $X_1$ and $X_2$
 
@@ -129,7 +129,7 @@ from the $Var[\hat{\beta_1}]$, it has two parts, and the accuracy of our model i
 
 3. in general 
 
-   <img src="/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/image-20201026094703334.png" alt="image-20201026094703334" style="zoom:50%;" />
+   <img src="./image/image-20201026094703334.png" alt="image-20201026094703334" style="zoom:50%;" />
 
 
 
@@ -159,7 +159,7 @@ https://statisticsbyjim.com/regression/multicollinearity-in-regression-analysis/
 
 *constant variance is violated*
 
-<img src="/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/image-20201027135844740.png" alt="image-20201027135844740" style="zoom:50%;" />
+<img src="./image/image-20201027135844740.png" alt="image-20201027135844740" style="zoom:50%;" />
 
 do not care about fit model but care about prediction, this problem could be ignored. because it
 
@@ -189,7 +189,7 @@ $>10$ : severe. when VIF=100, this would mean that the other predictors explain 
 
 When do  **weighted least squares**, to determine the appropriate weights 
 
-<img src="/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/image-20201029153130141.png" alt="image-20201029153130141" style="zoom:50%;" />
+<img src="./image/image-20201029153130141.png" alt="image-20201029153130141" style="zoom:50%;" />
 
 > https://online.stat.psu.edu/stat501/lesson/13/13.1
 
@@ -264,9 +264,9 @@ display categorical data
 
 Example:
 
-<img src="/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/image-20201107123626621.png" alt="image-20201107123626621" style="zoom:50%;" />
+<img src="./image/image-20201107123626621.png" alt="image-20201107123626621" style="zoom:50%;" />
 
-<img src="/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/image-20201107123412851.png" alt="image-20201107123412851" style="zoom:50%;" />
+<img src="./image/image-20201107123412851.png" alt="image-20201107123412851" style="zoom:50%;" />
 
 Interpretation:
 
@@ -442,7 +442,7 @@ exp(cbind(OR = coef(mylogit), confint(mylogit)))
 
      However, for samll data size, will not be very informative in terms of linearity or independence, but for small data size pearson still can be used to identity outliers, high leverage points and influential points. 
 
-     <img src="/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/image-20201118100210825.png" alt="image-20201118100210825" style="zoom:50%;" />
+     <img src="./image/image-20201118100210825.png" alt="image-20201118100210825" style="zoom:50%;" />
 
   2. the deviance of a model plays a similar role that RSS has a multiple linear regression (the larger the deviance, the worse the fit) (zero deviance means no information lost). 
 
@@ -462,9 +462,40 @@ with mean depends on the regressors / predictors
 
 
 
+- deviance test for poisson: scaled deviance 
+
+当响应变量观测的方差比依据泊松分布预测的方差大时，泊松回归可能发生过度离势，而且发生的概率很大。可能发生过度离势的原因有如下几个：
+
+- 遗漏了某个重要的预测变量；
+- 可能因为事件相关，在在泊松分布的观测中,计数中每次事件都被认为是独立发生的。
+- 在纵向数据分析中，重复测量的数据由于内在群聚特性可导致过度离势。
+
 ## Generalized Linear Model
 
-![image-20201119143039299](/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/image-20201119143039299.png)
+relax some assumptions of MLR 
+
+need: independent $Y$ and errors 
+
+- Linear function, e.g. can have only a linear predictor in the systematic component
+- Responses must be independent
+
+> Multiple linear regression is a regression with multiple independent variables. What makes the model linear is that there are coefficients on each variable (rather than nonlinear functions of each variable). There are many ways to estimate the value of these coefficients, the most common of which is ordinary least squares. Ordinary least squares (OLS) makes assumptions about the elements of the error term that are not always appropriate for every problem - that they are independent/incorrelated to each other.
+>
+> Generalized least squares is a way to relax the assumption of independent errors. It begins by estimating the correlation between elements of the error term and using that correlation in a least squares model with more realistic assumptions.
+>
+> In summary, linearity is about the functional form of the regression equation; generalizability is about the method to estimate coefficients. So they're not mutually exclusive - you can certainly run a generalized multiple regression.
+
+need to know: 
+
+- exponential family of the underlying distribution
+- the link function 
+- the linear predictor of the response variable to explotary variables 
+
+
+
+The choice of link is separate from the choice of random component thus we have more flexibility in modeling
+
+https://online.stat.psu.edu/stat504/node/216/
 
 
 
@@ -474,15 +505,24 @@ quasi-likelihood estimate, parameter estimate is valid even when the covariance 
 
 https://online.stat.psu.edu/stat504/node/180/
 
+specify the appropriate error distribution for the response and the implied link function, and an argument to specify the structure of the working correlation matrix (within-cluster correlation).
+
+the independence is assumed between clusters 
+
 
 
 ## Non-parametric
 
-The fitted values under a lineat smoother is simply gievn by 
+Only need: linear predictor
+
+The fitted values under a linear smoother is simply gievn by 
 $$
 \hat{y_i}=\hat{m}(x_i) \Rightarrow \mathbf{\hat{y}=Sy}
 $$
 where matrix $\mathbf{S}$ is known as smoothing matrix
+
+- a smoother curve does not mean better, especially for prediction, because less variance involved
+- break the ordered data into segments, for each segment, fit the data with simple or kernel 
 
 ### Simple Smoothing
 
@@ -494,12 +534,13 @@ where matrix $\mathbf{S}$ is known as smoothing matrix
 3. simple central moving averages (SCMA)
    - $(n-2L)$ bins 
    - avoids the shift in $x$ by using data on both sides 
+   - no estimated value of $m(x)$ at two endpoints of $x$
 4. running mean smoothing (RMS) 
 5. running line smoothing (RLS)
 
-the simple smoothers are not smooth, one way to address is to use a **linear spline** rather than a least squares line. Specifically, some called cubic spline. 
+the simple smoothers are not smooth, one way to address is to use a **linear spline** rather than a least squares line. Specifically, some called cubic spline. *the coefficients are chosen at the observed data only. the result will rely on the data chosen* 
 
-### Kernel Smoothing / Regression 
+### Kernel Smoothing / Regression
 
 a kernel is a non-negative integrable function $K(z)$ such that 
 $$
@@ -511,7 +552,7 @@ common kernel functions: Rectangular / Triangular / Parabolic / Gaussian
 
 
 
-### Penalised Regression 
+### Penalised Regression
 
 - natural cubic interpolating spline (NCIS)
 
@@ -521,19 +562,168 @@ common kernel functions: Rectangular / Triangular / Parabolic / Gaussian
 
 样条插值，给出a set of data points, 要求连续且一阶导连续（曲线光滑），二阶导连续（曲线曲率最小），且二阶导在boundary point为0
 
-## Generalised Additive Model 
+Regression splines often give better results than polynomial regression. This is because, unlike polynomials, which must use a high degree polynomial to produce flexible fits, splines introduce flexibility by increasing the number of knots but keep the degree fixed.
+
+## Generalised Additive Model
+
+it is a glm, more than one explotary variables. Like glm use unknown relations. Need a link funtion, relating y to the predictors, through smoothing funciton s
 
 Non-identifiable model
 
 additive model 
 
+check the error, which assume zero mean and constant variance 
+
+The main difference imho is that glm assume a fixed linear or some other parametric form of the relationship between the dependent variable and the covariates, GAM do not assume a priori any specific form of this relationship, and can be used to reveal and estimate non-linear effects of the covariate on the dependent variable.
+
+Pearson residuals for GLM and GAM should have approximately zero mean and constant variance 
+
+## PCA
+
+https://zhuanlan.zhihu.com/p/26305845
+
+主要判断准则如下：
+
+1. 根据先验经验和理论知识判断主成分数；
+2. 根据要解释变量方差的积累值的阈值来判断需要的主成分数；
+3. 通过检查变量间k×k的相关系数矩阵来判断保留的主成分数。
+
+- Difference in PCA and FA 
+
+  PCA: a method, FA: an application 
+
+  > Simplistically, though, factor analysis derives a mathematical model from which factors are estimated, whereas PCA merely decomposes the original data into a set of linear variates
+
+- Factor Rotation: 
+
+  factor loading：大部分variables会对most important factor 有high factor loading，但不方便interpretation
+
+  Factor rotation used to discriminate between factors. A factor is a classification axis along which variables could be plotted, factor rotation effectively rotate these factor axes such that variables are loaded maximally on only one factor.  
+
+  旋转是一系列将成分载荷阵变得更容易解释的数学方法，其作用是尽可能地去除噪声。旋转可以分为正交旋转和斜交旋转，前者使选择的成分保持不相关，后者让它们相关。
+
+## Factor Analysis
+
+When assume there is some hidden structure from which the observed $\mathbf{X}$ are generated, may need other dimension reduction method. 
+
+- **factor model** used to model such hidden structure: The variability in a large number of observed variables could be due to few unobserved factors and unobserved errors 
+  $$
+  \mathbf{X}_{n\times k}=\mathbf{F}_{n\times k}\mathbf{W}^k_{k\times l} + \mathbf{\epsilon}_{n \times k}
+  $$
+  $l < k \rightarrow $ Dimension reduction 
+
+  - **manifest variables: ** $\mathbf{X}$ , which is observed, as the original definition 
+  - **latent factors: **$\mathbf{F}$, hidden variables 
+
+  **Specification:** 
+
+  - $\mathbf{X,F}$ : zero mean + unit variance 
+
+  - $\mathbf{\epsilon:}$ zero mean 
+
+  - $\mathbf{F}$ uncorrelated *across observations* and *with other latent factors* 
+
+  - $\mathbf{\epsilon}$ uncorrelated *across observations*, *across $\mathbf{X} \text{ and }\mathbf{F}$*
+
+     
 
 
-## Points 
 
-not nested model, can;t use deviance based test, likelihood test, to select model
+## Some Points
+
+- not nested model, can;t use deviance based test, likelihood test, to select model
+
+  - could use AIC, the smaller, the better 
+
+- Use deviance to check goodness of fit. Use scaled deviance for GAM
+
+  <img src="./image/image-20201208132136174.png" alt="image-20201208132136174" style="zoom:33%;" />
+
+  <img src="./image/image-20201208132944267.png" alt="image-20201208132944267" style="zoom:33%;" />
 
 # Summary
 
-<img src="/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/image-20201118134859405.png" alt="image-20201118134859405" style="zoom:50%;" />
+## Models and Assumption check:
+
+写出用了什么模型，得到了什么结果，check 了什么assumption，因此又fit了什么，最终得到的model是什么
+
+## Executive Summary 
+
+想要test什么，得到了什么结论，estimate结果
+
+
+
+要review的问题：
+
+- 为什么要用各个模型
+- 各个模型背后的assumption是否有什么特定的，如何check，assumption violate了怎么办
+- 如何interpret estimate of each model 
+- gamma response with inverse / log link 
+
+
+
+GLM:
+
+need: independent $Y$ and errors 
+
+- Linear function, e.g. can have only a linear predictor in the systematic component (non-parametric / GAM当不再linear)
+- Responses must be independent (GEE 解决这一条的violation: solve the correlation error non-parametrically || GLMM through a probability model)
+
+
+
+
+
+**GLM**要求response independence当有repeated response observations violate independence 于是有了**GEE**
+
+**nonparametric** 与 nonlinear不同：modelling only one independent variable + form of $m(x)$ not being assumed or given beforehand. including : smoothing , linear spline instead of least square line. ONLY NEED linear predictor 
+
+ **GAM** do not assume a priori any specific form of this relationship, and can be used to reveal and estimate non-linear effects of the covariate on the dependent variable. The main difference imho is that glm assume a fixed linear or some other parametric form of the relationship between the dependent variable and the covariates,
+
+PCA and FA 是用于polish the exploratory variables 
+
+- SLR is a special case of MLR, MLR is a special case of GLM, GLM is a special of GAM 
+
+- everything is a trade-off, heavier computitional power for loose condition 
+
+
+
+LR test
+
+```R
+credit.all3.LG = glm(default~balance+income+student, family = binomial, data = credit.df)
+summary(credit.all3.LG) 
+# LR test of significance, similar to F-test
+credit.null.LG = glm(default~1, family = binomial, data = credit.df)
+LR.test = 2*(logLik(credit.all3.LG)[1] -logLik(credit.null.LG)[1]) 
+# compare full with null model, so three beta reduced to zero, degree of freedom should be 3 
+1-pchisq(LR.test, 3) 
+# significantly strong evidence to reject that the reduced model is adequate
+
+# LR test for reduced, similar to partial F-test
+credit.no.income.LG = glm(default~.-income, family = binomial, data=credit.df) 
+# must be the submodel (to the model going to be compared)
+LR.test = 2*(logLik(credit.all3.LG)[1] -logLik(credit.no.income.LG)[1])
+
+1-pchisq(LR.test, 1) 
+# fail to reject, only reduce one model, degree of freedom is 1 
+
+# LR-test 
+1-pchisq(bomber.PS$deviance,bomber.PS$df.residual)
+# 0.46: large p-value -> no evidence of lack of fit 
+
+# significance 
+1-pchisq(bomber.PS$null.deviance,bomber.PS$df.null) 
+# 0.0033: small p-value: at least one of the regressors is needed 
+
+# GAM  use scaled deviance to check goodness of fit 
+
+```
+
+$R^2$ through deviance
+
+```R
+# R_d^2 is 
+1-sim.final.LG$deviance/sim.final.LG$null.deviance
+# =0.97, model capture most of the deviation in the date 
+```
 

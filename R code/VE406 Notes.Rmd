@@ -1,10 +1,10 @@
 ---
 title: "Applied Regression Analysis using R"
 output:
-  html_notebook: default
+  pdf_document: default
   html_document:
     df_print: paged
-  pdf_document: default
+  html_notebook: default
 ---
 # L01-Basic 
 use '_' in name, to avoid confusion with the member function
@@ -102,12 +102,11 @@ Pr(X <= x) = pbinom(x, size = n, prob = p)
 
 qbinom: The quantile is defined as the smallest value x such that F(x) ≥ p, where F is the distribution function. with p$\in$ [0,1], returns the smallest value of q s.t. Pr(X<=returnvalue) >= p
 
-```{r}
+
 dbinom(x, size, prob, log = FALSE)
 pbinom(q, size, prob, lower.tail = TRUE, log.p = FALSE)
 qbinom(p, size, prob, lower.tail = TRUE, log.p = FALSE)
 rbinom(n, size, prob)
-```
 
 
 ### Binomial Example
@@ -293,7 +292,7 @@ abline(h = 0, col = 2)
 
 ## Central Limit Theorm 
 
-![](/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/image/CLT.png)
+![](./image/CLT.png)
 ### Illustration 
 ```{r}
 sample.size.vec
@@ -379,7 +378,7 @@ $SS_E$: error sum of squares
 $SS_E:=e_1^2 + e_2^2 + ...+e_n^2 = \sum_{i=1}^n(y_i-(b_0+b_1x_i))^2$
 
 ## model assumption for slr
-![](/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/image/modelAss.png)
+![](./image/modelAss.png)
 
 ## assumptions about the error term 
 
@@ -471,7 +470,7 @@ $Y_i|X_i$ ~ Normal $(\beta_0+
 \beta_1x_i, \sigma^2)$
 
 ## Box-Cox transformation 
-![](/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/image/boxcox.png)
+![](./image/boxcox.png)
 
 
 When y and x both do not follow normal dist., use transformation 
@@ -488,7 +487,7 @@ library(MASS)
 
 ```{r}
 oc.df = read.table("./in-class demo/Data/old_car.txt")
-oc.LM = lm(price~age, data = oc.df)
+# oc.LM = lm(price~age, data = oc.df)
 ```
 # L06 Prediction 
 to predict based on the current data 
@@ -505,7 +504,7 @@ TSS = ESS + RSS
 # L07 Multiple linear regression
 
 
-![](/Users/yuxinmiao/Documents/JI/JI2020Fall/VE406/R code/image/multi.png)
+![](./image/multi.png)
 
  regression coefficients in multiple regression: partial regression coefficients, as their interpretation requires other variables should be held fixed. 
 
@@ -1322,15 +1321,15 @@ semi.GLM = glm(Camber~.-Run, family = Gamma(link = "log"), data = semiconductor.
 summary(semi.GLM)
 
 ```
-## Nonparametric 
-### simple smoothing 
+# L20 Nonparametric 
+## simple smoothing 
 
 ```{r}
 rm(list=ls())
 # Cosmic Microwave Background Radiation 
 cmb.df = read.table("./in-class demo/Data/cmb.csv", sep=',', header = TRUE)
 library(splines)
-n.samp = 10
+n.samp = 10  # try different size spline with n
 index = sample(nrow(cmb.df), n.samp) # 随机选取十个
 cmb_train = cmb.df[index, ]
 cmb_train = cmb_train[order(cmb_train$freq), ]
@@ -1339,9 +1338,19 @@ pred.x = seq(min(cmb_train$freq), max(cmb_train$freq), length.out = 200)
 pred.vec = predict(ispl, pred.x)
 plot(cmb.df$power)
 plot(pred.vec)
+
+
 ```
 
-### Kernel Smoothing 
+## Kernel Smoothing 
+```{r}
+
+plot(power~freq, data = cmb.df, col = "deepskyblue", main ="Cosmic Microwave Backgroud Radiation", sub = "Gaussian knernel regression fit")
+lines(density(x = cmb.df$power, bw = 0.5, kernel = "gaussian"), col = 3)
+```
+
+## Penalised Regression
+
 ```{r}
 kreg = ksmooth(cmb.df$freq, cmb.df$power, kernel = 'normal', bandwidth = 44)
 library(KernSmooth)
@@ -1349,8 +1358,10 @@ lreg = locpoly(cmb.df$freq,cmb.df$power,degree=1, bandwidth=dpill(cmb.df$freq, c
 plot(power~freq, data = cmb.df, xlim=c(0,100), ylim = c(0, 3000), col = "deepskyblue", main ="Cosmic Microwave Backgroud Radiation", sub = "Boundary bias of kernel regression")
 lines(kreg, col=2, lwd = 1.5, lty = 2) 
 lines(lreg, col= 1, lwd = 2, lty = 3)
-legend("bottomright",c("Kernel Regresion (p = 0)", "Local Polynomial Regression (p = 1)"), col = c(2,1), lwd = c(1.5, 2), lty = 2:3)
 ```
+
+
+
 ```{r}
 n = 200
 x = seq(0, 1, length = n)
@@ -1359,7 +1370,70 @@ y = m + 0.15 * rnorm(n)
 plot(x, sqrt(x*(1-x)) * sin(2.1*pi/(x+0.05)))
 # 这里的图怎么画的？？
 ```
-## Generalised Additive Model 
+```{r}
+require(graphics)
+
+with(cars, {
+    plot(speed, dist)
+    lines(ksmooth(speed, dist, "normal", bandwidth = 2), col = 2)
+    lines(ksmooth(speed, dist, "normal", bandwidth = 5), col = 3)
+})
+```
+
+
+
+no data provided for the later courses, so no reproducing of plots in class 
+
+```{r}
+# interpolating spline from web 
+op <- par(mfrow = c(2,1), mgp = c(2,.8,0), mar = .1+c(3,3,3,1))
+n <- 9
+x <- 1:n
+y <- rnorm(n)
+plot(x, y, main = paste("spline[fun](.) through", n, "points"))
+lines(spline(x, y))
+lines(spline(x, y, n = 201), col = 2)
+
+```
+```{r}
+
+y <- (x-6)^2
+plot(x, y, main = "spline(.) -- 3 methods")
+lines(spline(x, y, n = 201), col = 2)
+lines(spline(x, y, n = 201, method = "natural"), col = 3)
+lines(spline(x, y, n = 201, method = "periodic"), col = 4)
+legend(6,25, c("fmm","natural","periodic"), col=2:4, lty=1)
+```
+```{r}
+rm(list=ls())
+## An example with ties (non-unique  x values):
+set.seed(1); x <- round(rnorm(30), 1); y <- sin(pi * x) + rnorm(30)/10
+plot(x,y, main="spline(x,y)  when x has ties")
+lines(spline(x,y, n= 201), col = 2)
+## visualizes the non-unique ones:
+tx <- table(x); mx <- as.numeric(names(tx[tx > 1]))
+ry <- matrix(unlist(tapply(y, match(x,mx), range, simplify=FALSE)),
+             ncol=2, byrow=TRUE)
+segments(mx, ry[,1], mx, ry[,2], col = "blue", lwd = 2)
+```
+```{r}
+rm(list=ls())
+Quantity <- c(25,39,45,57,70,85,89,100,110,124,137,150,177)
+Sales <- c(1000,1250,2600,3000,3500,4500,5000,4700,4405,4000,3730,3400,3300)
+data <- data.frame(Quantity,Sales)
+data
+# install.packages("plotly")
+library(plotly)
+plot_ly(data,x=~Quantity,
+        y=~Sales,
+        type="scatter"
+)
+
+fit2 <- lm(Sales ~ poly(Quantity,2) + Quantity, data=data)
+summary(fit2)
+```
+
+#L21Generalised Additive Model 
 Additive models that use splines 
 ```{r}
 library(carData) # The dataset is a part of it 
@@ -1489,4 +1563,46 @@ wage.LG.GAM = gam(I(wage > 250)~s(age)+s(year)+education, data = Wage, family = 
 
 # so! might need mixture model ! 
 ```
+
+#L22 PCA
+PCA influenced by the magnitude of each variable (the results obtained when we perform PCA will also depend on whether the variables have been individually scaled)
+```{r}
+library(tidyverse)  # data manipulation and visualization
+library(gridExtra)  # plot arrangement
+data("USArrests")
+head(USArrests, 10)
+
+USArrests.PCA = prcomp(USArrests, center = TRUE, scale = TRUE)
+biplot(USArrests.PCA, main = "Scaled", xlab = "First Principal Component", ylab = "Second Principal Component", asp = TRUE, cex.lab = 1.5, cex.main = 2, cex=c(3, 1.2), xlim = c(-0.3, 0.3), ylim = c(-0.3, 0.35), col=c("deepskyblue", "chocolate"), xlabs=rep("ů", nrow(USArrests))) 
+abline(h = 0, lty = 2, col = "grey")
+abline(v = 0, lty = 2, col = "grey")
+
+USArrests.PCA$center # means 
+USArrests.PCA$scale # standard deviations 
+USArrests.PCA$sdev  # standard deviation of each principal component
+varEx = USArrests.PCA$sdev^2 # variance explained by each principal component 
+proVarEx = varEx / sum(varEx)
+sumVarEx = cumsum(proVarEx)
+plot(sumVarEx, type = 'c', col = 'blue') + points(sumVarEx, pch = 20, col = 'red')
+USArrests.PCA$rotation # each column contains the corresponding principal component loading vector
+```
+
+
+
+```{r}
+## without built-in function 
+# scale the df 
+scaled_df <- apply(USArrests, 2, scale)
+# Calculate eigenvalues & eigenvectors
+arrests.cov <- cov(scaled_df)
+arrests.eigen <- eigen(arrests.cov)
+str(arrests.eigen)
+# Extract the loadings
+(phi <- arrests.eigen$vectors[,1:2])
+row.names(phi) <- c("Murder", "Assault", "UrbanPop", "Rape")
+colnames(phi) <- c("PC1", "PC2")
+phi
+# the first principal component (PC1) roughly corresponds to an overall rate of serious crimes since Murder, Assault, and Rape have the largest values. The second component (PC2) is affected by UrbanPop more than the other three variables, so it roughly corresponds to the level of urbanization of the state, with some opposite, smaller influence by murder rate.
+```
+# L23 Factor Analysis 
 
